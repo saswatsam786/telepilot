@@ -12,7 +12,7 @@
 
 **Text any Claude Code session from Telegram or iMessage.<br>It does the work on your Mac and texts you back.**
 
-[![Live demo](https://img.shields.io/badge/✨_live_demo-3D-7a5cff?style=flat-square)](https://saswatsam786.github.io/telepilot/)
+[![Website](https://img.shields.io/badge/✨_website-live-7a5cff?style=flat-square)](https://saswatsam786.github.io/telepilot/)
 [![Claude Code plugin](https://img.shields.io/badge/Claude_Code-plugin-d97757?style=flat-square&logo=anthropic&logoColor=white)](#-quick-start)
 [![Telegram](https://img.shields.io/badge/Telegram-2AABEE?style=flat-square&logo=telegram&logoColor=white)](#-how-it-works)
 [![iMessage](https://img.shields.io/badge/iMessage-34C759?style=flat-square&logo=imessage&logoColor=white)](#-how-it-works)
@@ -227,15 +227,17 @@ telepilot service install   # LaunchAgent: start at login, self-heal
 bun install && bun test     # unit + integration tests, no network, fake claude
 ```
 
-The plugin lives in [`plugins/telepilot`](plugins/telepilot) and has no runtime dependencies. The 3D landing page is [`docs/index.html`](docs/index.html). See the plugin's [README](plugins/telepilot/README.md) for the fakechat dev loop.
+The plugin lives in [`plugins/telepilot`](plugins/telepilot) and has no runtime dependencies. The landing page is [`docs/index.html`](docs/index.html). See the plugin's [README](plugins/telepilot/README.md) for the fakechat dev loop.
 
 ## 🙏 Credits
 
-The [landing page](https://saswatsam786.github.io/telepilot/) uses these freely licensed assets:
+Photos on the [landing page](https://saswatsam786.github.io/telepilot/) are from [Unsplash](https://unsplash.com), free to use under the [Unsplash License](https://unsplash.com/license):
 
-- **"Laptop / MacBook Pro"** 3D model by Alex Safayan, [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/), via [Poly Pizza](https://poly.pizza/m/27hcX_w47Jb). Re-materialled, with a live terminal on its screen.
-- **"Studio Small 09"** HDRI by Sergej Majboroda, [CC0](https://creativecommons.org/publicdomain/zero/1.0/), via [Poly Haven](https://polyhaven.com/a/studio_small_09).
-- [three.js](https://threejs.org) (MIT) and [Lenis](https://github.com/darkroomengineering/lenis) (MIT).
+- Desk with MacBook Pro by [Iewek Gnos](https://unsplash.com/photos/hhUx08PuYpc)
+- Commuters on a train by [John Lockwood](https://unsplash.com/photos/y2pvFL57Qnk)
+- Phone against the sky by [Daniel J. Schwarz](https://unsplash.com/photos/PAzD4ArCkuw)
+
+Smooth scrolling by [Lenis](https://github.com/darkroomengineering/lenis) (MIT).
 
 <div align="center">
 <br>
