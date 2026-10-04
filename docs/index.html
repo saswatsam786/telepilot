@@ -232,7 +232,6 @@
       <a class="btn primary lg" href="#install">Install in 2 minutes</a>
       <a class="btn lg" href="#how">How it works</a>
     </div>
-    <div class="meta r d3"><kbd>@api run the tests</kbd><kbd>/new blog ~/code/blog</kbd><kbd>/photo</kbd></div>
   </header>
 
   <section id="why">
@@ -357,12 +356,12 @@
   </section>
 </main>
 
-<footer><div class="wrap"><span>MIT © <a href="https://github.com/saswatsam786">saswatsam786</a></span><span>Not affiliated with Anthropic or Telegram</span></div></footer>
+<footer><div class="wrap"><span>MIT © <a href="https://github.com/saswatsam786">saswatsam786</a></span><span>Studio HDRI by Sergej Majboroda, <a href="https://polyhaven.com/a/studio_small_09">Poly Haven</a> (CC0) · Not affiliated with Anthropic or Telegram</span></div></footer>
 
 <script type="importmap">
 { "imports": {
-  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
 } }
 </script>
 <script>
@@ -407,141 +406,6 @@
   else new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { play(); o.disconnect(); } }, { threshold: .3 }).observe(chat);
 })();
 </script>
-<script type="module">
-// 3D hero on light: aluminium phone → frosted-glass hub → laptop, with a stream of glossy beads
-// carrying the message across and the reply flowing back. Soft shadows, studio reflections, no bloom.
-import * as THREE from 'three';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-
-const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const host = document.getElementById('stage');
-let renderer;
-try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' }); if (!renderer.getContext()) throw 0; }
-catch { host.remove(); throw new Error('no webgl'); }
-renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
-renderer.setClearColor(0x000000, 0);
-renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
-renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-host.appendChild(renderer.domElement);
-
-const scene = new THREE.Scene();
-const pmrem = new THREE.PMREMGenerator(renderer);
-scene.environment = pmrem.fromScene(new RoomEnvironment(), .04).texture;
-const camera = new THREE.PerspectiveCamera(34, 1, .1, 200);
-
-const SKY = new THREE.Color('#1f9ee8'), VIOLET = new THREE.Color('#7a5cff'), CORAL = new THREE.Color('#e2643c');
-const rig = new THREE.Group(); scene.add(rig);
-
-scene.add(new THREE.HemisphereLight('#ffffff', '#e9e4dc', .9));
-const sun = new THREE.DirectionalLight('#ffffff', 2.2);
-sun.position.set(1.5, 16, 6); sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048); sun.shadow.radius = 9; sun.shadow.blurSamples = 20; sun.shadow.bias = -.0004;
-Object.assign(sun.shadow.camera, { left: -16, right: 16, top: 10, bottom: -10, near: 1, far: 40 });
-rig.add(sun); rig.add(sun.target);
-
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 40), new THREE.ShadowMaterial({ opacity: .08 }));
-ground.rotation.x = -Math.PI / 2; ground.position.y = -2.4; ground.receiveShadow = true; rig.add(ground);
-
-const alu = () => new THREE.MeshPhysicalMaterial({ color: '#e6e8ee', metalness: .75, roughness: .28, clearcoat: .6, clearcoatRoughness: .3 });
-const glassDark = () => new THREE.MeshPhysicalMaterial({ color: '#141824', metalness: .1, roughness: .08, clearcoat: 1 });
-const gloss = c => new THREE.MeshPhysicalMaterial({ color: c, metalness: .05, roughness: .22, clearcoat: 1, clearcoatRoughness: .1, sheen: .4 });
-const soft = c => new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: .45, roughness: .4 });
-const cast = o => { o.traverse(m => { if (m.isMesh) m.castShadow = true; }); return o; };
-
-// phone
-const phone = new THREE.Group();
-phone.add(new THREE.Mesh(new RoundedBoxGeometry(1.75, 3.5, .22, 6, .27), alu()));
-const pScr = new THREE.Mesh(new RoundedBoxGeometry(1.56, 3.26, .02, 4, .2), glassDark()); pScr.position.z = .11; phone.add(pScr);
-const bub = [[.26, 1.05, .92, SKY], [-.22, .6, .8, new THREE.Color('#ffffff')], [.28, .14, .66, SKY], [-.18, -.36, 1.0, CORAL], [.3, -.86, .56, SKY]].map(([x, y, w, c]) => {
-  const m = new THREE.Mesh(new RoundedBoxGeometry(w, .28, .03, 3, .1), soft(c)); m.position.set(x, y, .135); phone.add(m); return { m, c };
-});
-cast(phone); rig.add(phone);
-
-// hub: frosted glass orb around a warm gradient core, with thin orbit rings
-const hub = new THREE.Group();
-const core = new THREE.Mesh(new THREE.IcosahedronGeometry(.58, 6), new THREE.MeshPhysicalMaterial({ color: '#ff9b78', emissive: '#7a5cff', emissiveIntensity: .25, roughness: .25, clearcoat: 1, iridescence: 1, iridescenceIOR: 1.6 }));
-hub.add(core);
-const orb = new THREE.Mesh(new THREE.SphereGeometry(1.2, 64, 64), new THREE.MeshPhysicalMaterial({ color: '#ffffff', transmission: 1, thickness: 1.2, roughness: .18, ior: 1.35, iridescence: .7, iridescenceIOR: 1.3, clearcoat: 1, attenuationColor: '#e9e2ff', attenuationDistance: 3 }));
-hub.add(orb);
-const rings = [[1.75, SKY, .45], [2.15, CORAL, -.5]].map(([r, c, tilt]) => { const m = new THREE.Mesh(new THREE.TorusGeometry(r, .022, 12, 200), gloss(c)); m.rotation.set(Math.PI / 2 + tilt, 0, 0); hub.add(m); return m; });
-cast(hub); rig.add(hub);
-
-// laptop
-const mac = new THREE.Group();
-mac.add(new THREE.Mesh(new RoundedBoxGeometry(3.1, .11, 2.1, 4, .05), alu()));
-const lid = new THREE.Group(); lid.position.set(0, .055, -1.05); lid.rotation.x = -.26; mac.add(lid);
-const lb = new THREE.Mesh(new RoundedBoxGeometry(3.1, 2.06, .07, 4, .05), alu()); lb.position.y = 1.03; lid.add(lb);
-const disp = new THREE.Mesh(new THREE.PlaneGeometry(2.88, 1.84), glassDark()); disp.position.set(0, 1.03, .04); lid.add(disp);
-const lines = Array.from({ length: 7 }, (_, i) => { const w = .5 + ((i * 53) % 11) / 8; const c = i === 0 ? CORAL : i % 3 ? new THREE.Color('#9aa1b2') : SKY;
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, .065), new THREE.MeshBasicMaterial({ color: c })); m.position.set(-1.25 + w / 2, 1.75 - i * .23, .045); lid.add(m); return { m, w }; });
-mac.rotation.y = -.5;
-cast(mac); rig.add(mac);
-const moons = [SKY, VIOLET, CORAL].map((c, i) => { const m = new THREE.Mesh(new THREE.SphereGeometry(.14, 32, 32), gloss(c)); m.castShadow = true; rig.add(m); return { m, r: 2.3 + i * .3, s: .3 + i * .07, p: i * 2.1 }; });
-
-// bead streams: instanced glossy spheres riding each curve, coloured from source to destination
-const streams = [];
-const beadGeo = new THREE.SphereGeometry(1, 16, 16);
-function stream(from, to, n, speed, size) {
-  const mesh = new THREE.InstancedMesh(beadGeo, new THREE.MeshPhysicalMaterial({ roughness: .2, clearcoat: 1, metalness: .05 }), n);
-  mesh.castShadow = true; rig.add(mesh);
-  const line = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial({ color: '#b9bfcc', transparent: true, opacity: .55 })); rig.add(line);
-  const seeds = Array.from({ length: n }, () => ({ t: Math.random(), v: .7 + Math.random() * .6, o: new THREE.Vector3().randomDirection().multiplyScalar(Math.random() * .14), k: .5 + Math.random() * .7 }));
-  const s = { mesh, line, seeds, speed, from, to, size, curve: null }; streams.push(s); return s;
-}
-const sOut = stream(SKY, VIOLET, 90, .12, .085), sMid = stream(VIOLET, CORAL, 90, .12, .085), sBack = stream(CORAL, SKY, 60, .09, .065);
-
-let portrait = false;
-const A = { phone: new THREE.Vector3(), hub: new THREE.Vector3(), mac: new THREE.Vector3() };
-function layout() {
-  const w = innerWidth, h = innerHeight;
-  renderer.setSize(w, h); camera.aspect = w / h; portrait = w / h < .85;
-  if (portrait) { A.phone.set(-2.6, 0, 0); A.hub.set(0, .4, 0); A.mac.set(2.8, -.5, 0); rig.scale.setScalar(.8); camera.fov = 38; ground.position.y = -2.3; }
-  else { A.phone.set(-7.2, .2, 0); A.hub.set(0, .45, 0); A.mac.set(7.0, -.7, 0); rig.scale.setScalar(1); camera.fov = 30; ground.position.y = -2.3; }
-  rig.position.set(0, 0, 0);
-  // keep the headline clear: render the scene into the lower band of the viewport
-  camera.setViewOffset(w, h, 0, -h * (portrait ? .3 : .37), w, h);
-  phone.position.copy(A.phone); hub.position.copy(A.hub); mac.position.copy(A.mac);
-  const arc = (a, b, lift, z) => new THREE.CatmullRomCurve3([a, a.clone().lerp(b, .5).add(new THREE.Vector3(0, lift, z)), b]);
-  sOut.curve = arc(A.phone.clone().add(new THREE.Vector3(1, .5, .1)), A.hub.clone().add(new THREE.Vector3(-1.1, 0, 0)), 1.5, 1.1);
-  sMid.curve = arc(A.hub.clone().add(new THREE.Vector3(1.1, 0, 0)), A.mac.clone().add(new THREE.Vector3(-.5, 1.1, -.2)), 1.3, .9);
-  sBack.curve = arc(A.mac.clone().add(new THREE.Vector3(-.9, -.1, .7)), A.phone.clone().add(new THREE.Vector3(.5, -1.4, .2)), -1.2, 3.2);
-  streams.forEach(s => { s.line.geometry.dispose(); s.line.geometry = new THREE.TubeGeometry(s.curve, 160, .01, 6, false); });
-  camera.updateProjectionMatrix();
-}
-addEventListener('resize', layout); layout();
-
-const mouse = new THREE.Vector2(), aim = new THREE.Vector2();
-addEventListener('pointermove', e => aim.set(e.clientX / innerWidth - .5, e.clientY / innerHeight - .5), { passive: true });
-const clock = new THREE.Clock(), v = new THREE.Vector3(), col = new THREE.Color(), M = new THREE.Matrix4(), Q = new THREE.Quaternion(), S = new THREE.Vector3();
-function frame() {
-  const t = reduce ? 4 : clock.getElapsedTime();
-  mouse.lerp(aim, .045);
-  const sy = Math.min(scrollY / innerHeight, 1.4);
-  camera.position.set(Math.sin(t * .1) * 1.0 + mouse.x * 2.0, 3.2 - mouse.y * 1.1 + sy * 2.0, (portrait ? 30 : 27) + sy * 3.5);
-  camera.lookAt(0, -.3 - sy * 1.0, 0);
-
-  phone.rotation.set(Math.sin(t * .7) * .04, .38 + Math.sin(t * .45) * .1, Math.sin(t * .55) * .03); phone.position.y = A.phone.y + Math.sin(t * 1.05) * .14;
-  bub.forEach(({ m }, i) => { m.material.emissiveIntensity = .25 + .5 * Math.max(0, Math.sin(t * 1.6 - i * .9)); });
-  core.rotation.set(t * .3, t * .4, 0); core.scale.setScalar(1 + Math.sin(t * 2) * .04);
-  rings[0].rotation.z = t * .35; rings[1].rotation.z = -t * .27;
-  hub.position.y = A.hub.y + Math.sin(t * .9 + 2) * .12;
-  mac.position.y = A.mac.y + Math.sin(t * .85 + 1) * .08;
-  lines.forEach(({ m, w }, i) => { const k = .35 + .65 * (.5 + .5 * Math.sin(t * 1.3 + i * 1.1)); m.scale.x = k; m.position.x = -1.25 + (w * k) / 2; });
-  moons.forEach(({ m, r, s, p }) => { const a = t * s + p; m.position.set(mac.position.x + Math.cos(a) * r, mac.position.y + 1.2 + Math.sin(a * 1.4) * .45, Math.sin(a) * r * .55); });
-
-  streams.forEach(s => {
-    s.seeds.forEach((d, i) => { d.t = (d.t + s.speed * d.v * .016) % 1; s.curve.getPointAt(d.t, v).add(d.o);
-      const sc = s.size * d.k * (.35 + .65 * Math.sin(Math.PI * d.t)); S.setScalar(sc);
-      M.compose(v, Q, S); s.mesh.setMatrixAt(i, M);
-      col.copy(s.from).lerp(s.to, d.t); s.mesh.setColorAt(i, col); });
-    s.mesh.instanceMatrix.needsUpdate = true; if (s.mesh.instanceColor) s.mesh.instanceColor.needsUpdate = true;
-  });
-
-  renderer.render(scene, camera);
-  if (!reduce) requestAnimationFrame(frame);
-}
-frame();
-</script>
+<script type="module" src="hero.js"></script>
 </body>
 </html>
