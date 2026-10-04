@@ -8,6 +8,12 @@
 <meta property="og:title" content="telepilot: your Claude Code, in your pocket">
 <meta property="og:description" content="Drive every Claude Code session and your Mac from Telegram or iMessage. Open-source Claude Code plugin.">
 <meta name="theme-color" content="#f7f6f3">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://saswatsam786.github.io/telepilot/">
+<meta property="og:image" content="https://saswatsam786.github.io/telepilot/assets/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://saswatsam786.github.io/telepilot/assets/og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -67,8 +73,13 @@
   h1{font-weight:600;font-size:clamp(40px,7.6vw,100px);line-height:.96;letter-spacing:-.045em;margin-top:26px}
   .accent{font-family:var(--serif);font-style:italic;font-weight:400;letter-spacing:-.015em;padding-right:.06em;
     background:linear-gradient(95deg,var(--sky) 5%,var(--violet) 50%,var(--coral) 92%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lede strong{color:var(--t1);font-weight:600}
   .lede{max-width:580px;margin:24px auto 0;font-size:clamp(17px,1.9vw,19px);color:var(--t2)}
   .ctas{display:flex;gap:12px;margin-top:32px;flex-wrap:wrap;justify-content:center}
+  .oneline{display:flex;align-items:center;gap:10px;max-width:100%;margin-top:28px;padding:6px 6px 6px 16px;border-radius:12px;background:#101218;box-shadow:0 18px 40px -22px rgba(15,17,26,.6)}
+  .oneline code{background:none;color:#e9eaee;font-size:13px;white-space:nowrap;overflow-x:auto;padding:6px 0}
+  .oneline code::before{content:"$ ";color:#f08a63}
+  .oneline .btn{height:32px;padding:0 12px;font-size:12px;border-radius:8px;background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.15);box-shadow:none}
   .meta{margin-top:22px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 
   /* ---------- photos ---------- */
@@ -282,7 +293,8 @@
   <header class="wrap hero">
     <div class="eyebrow r"><b>Open source</b>A Claude Code plugin</div>
     <h1 class="r d1">Your Claude Code,<br><span class="accent">in your pocket.</span></h1>
-    <p class="lede r d2">Text any Claude Code session from Telegram or iMessage. It does the real work on your Mac, asks before anything risky, and texts you back.</p>
+    <p class="lede r d2"><strong>Ship from the couch.</strong> Text any Claude Code session from Telegram or iMessage. It does the real work on your Mac, asks before anything risky, and texts you back.</p>
+    <div class="oneline r d3"><code id="one">claude plugin marketplace add saswatsam786/telepilot &amp;&amp; claude plugin install telepilot@telepilot</code><button class="btn" id="copy1" aria-label="Copy install command">Copy</button></div>
     <div class="ctas r d3">
       <a class="btn primary lg" href="#install">Install in 2 minutes</a>
       <a class="btn lg" href="#how">How it works</a>
@@ -384,7 +396,7 @@
   <section id="usecases">
     <div class="wrap">
       <div class="kicker r">Use cases</div>
-      <h2 class="r d1">What people do<br><span class="accent">from their phone.</span></h2>
+      <h2 class="r d1">Ship from the couch.<br><span class="accent">And the train. And the dog walk.</span></h2>
       <p class="sub r d2">A few real moments where telepilot saves a walk back to the desk.</p>
       <div class="cases">
         <article class="card case wide r">
@@ -454,7 +466,8 @@
   <section id="security">
     <div class="wrap">
       <div class="kicker r">Security</div>
-      <h2 class="r d1">Remote control,<br><span class="accent">with guard rails.</span></h2>
+      <h2 class="r d1">Nothing runs<br><span class="accent">without your yes.</span></h2>
+      <p class="sub r d2">Remote control with guard rails. Anything risky stops and asks you first, on your phone.</p>
       <div class="sec r d2">
         <div><span class="ic sky"><svg class="i"><use href="#i-lock"/></svg></span><h4>Only you get in</h4><p>The official pairing allowlist means only your account reaches the hub.</p></div>
         <div><span class="ic violet"><svg class="i"><use href="#i-check"/></svg></span><h4>Permissions stay on</h4><p>Risky actions wait for your tap. Codes are random, single-use and expiring.</p></div>
@@ -468,8 +481,8 @@
     <div class="wrap inst">
       <div>
         <div class="kicker r">Install</div>
-        <h2 class="r d1">Three commands.<br><span class="accent">Two minutes.</span></h2>
-        <p class="sub r d2">Paste them into Claude Code. Setup asks Telegram or iMessage, connects your bot, pairs your account and starts the hub.</p>
+        <h2 class="r d1">One line.<br><span class="accent">Two minutes.</span></h2>
+        <p class="sub r d2">Run the one-liner in your terminal, then <code>/telepilot:setup</code> in Claude Code. Setup asks Telegram or iMessage, connects your bot, pairs your account and starts the hub.</p>
         <div class="req r d3">
           <div><svg class="i"><use href="#i-tick"/></svg>macOS + Claude Code 2.1.288 or newer</div>
           <div><svg class="i"><use href="#i-tick"/></svg>Pro / Max plan or an API key</div>
@@ -493,7 +506,7 @@
       <div class="cta-photo on-dark r" data-parallax>
         <img src="assets/photos/sky-2000.webp" srcset="assets/photos/sky-1200.webp 1200w, assets/photos/sky-2000.webp 2000w, assets/photos/sky-2800.webp 2800w" sizes="(max-width: 1208px) 100vw, 1160px" alt="A hand holding up a phone against a cloudy sky" width="2800" height="1867" loading="lazy" decoding="async">
         <div class="copy">
-          <h2>Leave the desk.<br><span class="accent">Keep shipping.</span></h2>
+          <h2>Close the laptop.<br><span class="accent">Keep shipping.</span></h2>
           <div class="ctas">
             <a class="btn primary lg" href="https://github.com/saswatsam786/telepilot">Get telepilot on GitHub</a>
             <a class="btn lg" href="#install">Install</a>
@@ -535,6 +548,10 @@
   const wave = document.getElementById('wave');
   for (let i = 0; i < 36; i++) { const b = document.createElement('i'); b.style.height = (30 + Math.abs(Math.sin(i * .9)) * 70) + '%'; b.style.animationDelay = (-(i * .07)) + 's'; wave.appendChild(b); }
 
+  document.getElementById('copy1').onclick = async e => {
+    try { await navigator.clipboard.writeText(document.getElementById('one').textContent); e.target.textContent = 'Copied'; } catch { e.target.textContent = 'Select to copy'; }
+    setTimeout(() => (e.target.textContent = 'Copy'), 1600);
+  };
   document.getElementById('copy').onclick = async e => {
     const text = [...document.querySelectorAll('#cmds div:not(.ok)')].map(d => d.textContent.replace(/^❯\s*/, '')).join('\n');
     try { await navigator.clipboard.writeText(text); e.target.textContent = 'Copied'; } catch { e.target.textContent = 'Select to copy'; }

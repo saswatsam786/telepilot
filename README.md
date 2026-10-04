@@ -10,6 +10,8 @@
 
 # Your Claude Code, in your pocket.
 
+**Ship from the couch. Nothing runs without your yes.**
+
 **Text any Claude Code session from Telegram or iMessage.<br>It does the work on your Mac and texts you back.**
 
 [![Website](https://img.shields.io/badge/✨_website-live-7a5cff?style=flat-square)](https://saswatsam786.github.io/telepilot/)
@@ -21,7 +23,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-3b82f6?style=flat-square)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/saswatsam786/telepilot?style=flat-square&color=f5c518)](https://github.com/saswatsam786/telepilot/stargazers)
 
-[**Quick start**](#-quick-start) · [**Features**](#-features) · [**How it works**](#-how-it-works) · [**Commands**](#-commands) · [**Security**](#-security) · [**Live demo ↗**](https://saswatsam786.github.io/telepilot/)
+[**Quick start**](#-quick-start) · [**Features**](#-features) · [**How it works**](#-how-it-works) · [**Commands**](#-commands) · [**Security**](#-nothing-runs-without-your-yes) · [**Live demo ↗**](https://saswatsam786.github.io/telepilot/)
 
 </div>
 
@@ -59,7 +61,13 @@ It's not another agent. **It's _your_ Claude Code**, with your plan, sessions, s
 
 ## ⚡ Quick start
 
-Paste these three commands into Claude Code:
+One line in your terminal:
+
+```bash
+claude plugin marketplace add saswatsam786/telepilot && claude plugin install telepilot@telepilot
+```
+
+Then run `/telepilot:setup` in Claude Code. Or, from inside Claude Code, paste these three commands:
 
 ```bash
 /plugin marketplace add saswatsam786/telepilot
@@ -214,7 +222,7 @@ telepilot service install   # LaunchAgent: start at login, self-heal
 
 </details>
 
-## 🔐 Security
+## 🔐 Nothing runs without your yes
 
 > [!IMPORTANT]
 > Whoever controls your Telegram account can drive your Mac. **Turn on Telegram two-step verification.**
