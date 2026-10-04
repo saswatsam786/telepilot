@@ -1,13 +1,21 @@
 // telepilot hero: one message, told in 3D.
 // A message leaves the phone, reaches the hub, gets worked on by the Mac, and the reply flows back.
 // The phone and laptop screens are live canvas textures that follow the same timeline.
-// Lighting: "Studio Small 09" HDRI by Sergej Majboroda, Poly Haven (CC0), vendored in assets/.
+// Assets (vendored in assets/):
+//   "Studio Small 09" HDRI by Sergej Majboroda, Poly Haven, CC0. https://polyhaven.com/a/studio_small_09
+//   "Laptop / MacBook Pro" model by Alex Safayan, CC-BY 3.0, via Poly Pizza. https://poly.pizza/m/27hcX_w47Jb
 import * as THREE from 'three';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 const params = new URLSearchParams(location.search);
-const FIXED = params.has('t') ? Number(params.get('t')) : null; // ?t=4.2 renders one frame (used to record the demo GIF)
+const FIXED = params.has('t') ? Number(params.get('t')) : null;
+const SCROLL = params.has('s') ? Number(params.get('s')) : null; // ?s=0.6 previews the scroll choreography // ?t=4.2 renders one frame (used to record the demo GIF)
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const host = document.getElementById('stage');
 
@@ -17,8 +25,7 @@ try {
   if (!renderer.getContext()) throw 0;
 } catch { host.remove(); throw new Error('no webgl'); }
 renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
-renderer.setClearColor(0x000000, 0);
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMapping = THREE.NeutralToneMapping; // keeps the light page colours true
 renderer.toneMappingExposure = 1.0;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -26,6 +33,12 @@ host.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 scene.environmentIntensity = .9;
+// painted backdrop that matches the page's soft washes
+scene.background = (() => { const c = document.createElement('canvas'); c.width = 1600; c.height = 1000; const g = c.getContext('2d');
+  g.fillStyle = '#f7f6f3'; g.fillRect(0, 0, 1600, 1000);
+  [[.12, .08, 'rgba(31,158,232,.16)'], [.88, .14, 'rgba(226,100,60,.13)'], [.5, .95, 'rgba(122,92,255,.12)']].forEach(([x, y, col]) => {
+    const r = g.createRadialGradient(x * 1600, y * 1000, 0, x * 1600, y * 1000, 700); r.addColorStop(0, col); r.addColorStop(1, 'rgba(247,246,243,0)'); g.fillStyle = r; g.fillRect(0, 0, 1600, 1000); });
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
 const camera = new THREE.PerspectiveCamera(30, 1, .1, 200);
 
 const C = { sky: new THREE.Color('#1f9ee8'), violet: new THREE.Color('#7a5cff'), coral: new THREE.Color('#e2643c') };
@@ -152,18 +165,39 @@ const rings = [[1.62, C.sky, .5], [1.95, C.coral, -.42], [2.25, C.violet, .15]].
   const m = new THREE.Mesh(new THREE.TorusGeometry(r, i === 2 ? .008 : .016, 16, 240), gloss(c)); m.rotation.set(Math.PI / 2 + tilt, 0, i); m.castShadow = true; hub.add(m); return m; });
 scene.add(hub);
 
-// ---------- laptop ----------
+// ---------- laptop: real GLTF model, re-materialled, with the live terminal projected on its screen ----------
 const mac = new THREE.Group();
-const base = new THREE.Mesh(new RoundedBoxGeometry(3.3, .12, 2.2, 6, .06), titanium()); mac.add(base);
-const pad = new THREE.Mesh(new RoundedBoxGeometry(1.1, .005, .7, 2, .002), new THREE.MeshPhysicalMaterial({ color: '#dadce2', metalness: .9, roughness: .4 })); pad.position.set(0, .062, .55); mac.add(pad);
-const keys = new THREE.Mesh(new RoundedBoxGeometry(2.7, .005, .9, 2, .002), new THREE.MeshPhysicalMaterial({ color: '#202228', roughness: .6 })); keys.position.set(0, .062, -.38); mac.add(keys);
-const lid = new THREE.Group(); lid.position.set(0, .06, -1.1); mac.add(lid);
-const lidBody = new THREE.Mesh(new RoundedBoxGeometry(3.3, 2.16, .08, 6, .06), titanium()); lidBody.position.y = 1.08; lid.add(lidBody);
-const bezel = new THREE.Mesh(new THREE.PlaneGeometry(3.18, 2.04), new THREE.MeshPhysicalMaterial({ color: '#0b0c10', roughness: .05, clearcoat: 1 })); bezel.position.set(0, 1.08, .041); lid.add(bezel);
-const mScreen = new THREE.Mesh(new THREE.PlaneGeometry(3.02, 1.93), glassScreen(macScr.tex)); mScreen.material.transparent = false; mScreen.position.set(0, 1.08, .043); lid.add(mScreen);
-mac.traverse(m => m.isMesh && (m.castShadow = true));
 mac.rotation.y = -.42;
 scene.add(mac);
+const macReady = new GLTFLoader().loadAsync(new URL('assets/models/macbook-pro.glb', import.meta.url).href).then(gltf => {
+  const m = gltf.scene;
+  const box = new THREE.Box3().setFromObject(m), size = box.getSize(new THREE.Vector3()), ctr = box.getCenter(new THREE.Vector3());
+  const k = 3.4 / size.x;
+  m.scale.setScalar(k); m.position.set(-ctr.x * k, -box.min.y * k, -ctr.z * k);
+  // the model's parts: mat16 aluminium shell, mat15 keyboard deck, mat23 keys/bezel, mat17 display (lid) or keyboard well (base)
+  const alu = titanium(), deck = new THREE.MeshPhysicalMaterial({ color: '#e3e5ea', metalness: .85, roughness: .38 });
+  const keysMat = new THREE.MeshPhysicalMaterial({ color: '#16171b', roughness: .6 }), bezelMat = new THREE.MeshPhysicalMaterial({ color: '#08090c', roughness: .06, clearcoat: 1 });
+  m.traverse(o => {
+    if (!o.isMesh) return;
+    o.castShadow = true;
+    const g = o.geometry; g.computeBoundingBox(); const bb = g.boundingBox, d = bb.getSize(new THREE.Vector3()), upright = d.y > d.x * .5;
+    switch (o.material.name) {
+      case 'mat16': o.material = alu; break;
+      case 'mat15': o.material = deck; break;
+      case 'mat23': o.material = upright ? bezelMat : keysMat; break;
+      case 'mat17':
+        if (upright) { // the display: planar UVs + the live terminal
+          const p = g.attributes.position, uv = new Float32Array(p.count * 2);
+          for (let i = 0; i < p.count; i++) { uv[i * 2] = (p.getX(i) - bb.min.x) / d.x; uv[i * 2 + 1] = (p.getY(i) - bb.min.y) / d.y; }
+          g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+          o.material = glassScreen(macScr.tex); o.material.side = THREE.DoubleSide; o.castShadow = false;
+        } else o.material = keysMat;
+        break;
+      default: o.material = bezelMat;
+    }
+  });
+  mac.add(m);
+});
 
 // ---------- connections: tubes with a flowing shader + a travelling message capsule ----------
 const flowMat = (a, b) => new THREE.ShaderMaterial({
@@ -185,7 +219,7 @@ const legs = [
   { mat: flowMat(C.coral, C.sky) },
 ].map(l => { l.mesh = new THREE.Mesh(new THREE.BufferGeometry(), l.mat); scene.add(l.mesh); return l; });
 
-const capsule = new THREE.Mesh(new THREE.CapsuleGeometry(.11, .34, 8, 24), new THREE.MeshPhysicalMaterial({ color: '#ffffff', roughness: .12, clearcoat: 1, iridescence: .6, emissive: '#1f9ee8', emissiveIntensity: .25 }));
+const capsule = new THREE.Mesh(new THREE.CapsuleGeometry(.11, .34, 8, 24), new THREE.MeshPhysicalMaterial({ color: '#ffffff', roughness: .12, clearcoat: 1, iridescence: .6, emissive: '#1f9ee8', emissiveIntensity: 2.2 }));
 capsule.castShadow = true; scene.add(capsule);
 const halo = new THREE.Mesh(new THREE.SphereGeometry(.34, 32, 32), new THREE.MeshBasicMaterial({ color: '#1f9ee8', transparent: true, opacity: .14, depthWrite: false }));
 scene.add(halo);
@@ -193,7 +227,7 @@ scene.add(halo);
 // ---------- layout ----------
 let portrait = false;
 const P = { phone: new THREE.Vector3(), hub: new THREE.Vector3(), mac: new THREE.Vector3() };
-function layout() {
+let layout = function () {
   const w = innerWidth, h = innerHeight;
   renderer.setSize(w, h); camera.aspect = w / h; portrait = w / h < .85;
   const s = portrait ? .8 : 1;
@@ -205,13 +239,21 @@ function layout() {
   const arc = (a, b, lift, z) => new THREE.CatmullRomCurve3([a, a.clone().lerp(b, .5).add(new THREE.Vector3(0, lift, z)), b], false, 'centripetal');
   const k = s;
   legs[0].curve = arc(P.phone.clone().add(new THREE.Vector3(1.0 * k, .9 * k, .2)), P.hub.clone().add(new THREE.Vector3(-1.2 * k, .15, 0)), 1.6 * k, 1.0);
-  legs[1].curve = arc(P.hub.clone().add(new THREE.Vector3(1.2 * k, .15, 0)), P.mac.clone().add(new THREE.Vector3(-.9 * k, 1.5 * k, -.3)), 1.4 * k, .8);
+  legs[1].curve = arc(P.hub.clone().add(new THREE.Vector3(1.2 * k, .15, 0)), P.mac.clone().add(new THREE.Vector3(-1.75 * k, 1.0 * k, .2)), 1.4 * k, .8);
   legs[2].curve = arc(P.mac.clone().add(new THREE.Vector3(-1.0 * k, -.2, 1.0)), P.phone.clone().add(new THREE.Vector3(.75 * k, -1.2 * k, .4)), -.6 * k, 3.0);
   legs.forEach(l => { l.mesh.geometry.dispose(); l.mesh.geometry = new THREE.TubeGeometry(l.curve, 200, portrait ? .028 : .024, 12, false); });
   camera.fov = portrait ? 38 : 30;
   camera.setViewOffset(w, h, 0, -h * (portrait ? .27 : .3), w, h); // keep the headline clear
   camera.updateProjectionMatrix();
 }
+const target = new THREE.WebGLRenderTarget(1, 1, { samples: 4, type: THREE.HalfFloatType });
+const composer = new EffectComposer(renderer, target);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), .5, .5, 1.02); // only the bright message capsule blooms
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+const _layout = layout;
+layout = () => { _layout(); composer.setSize(innerWidth, innerHeight); composer.setPixelRatio(renderer.getPixelRatio()); };
 addEventListener('resize', layout); layout();
 
 // ---------- motion ----------
@@ -219,17 +261,18 @@ const aim = new THREE.Vector2(), mouse = new THREE.Vector2();
 addEventListener('pointermove', e => aim.set(e.clientX / innerWidth - .5, e.clientY / innerHeight - .5), { passive: true });
 const tan = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), q = new THREE.Quaternion();
 const clock = new THREE.Clock();
-let last = -1;
+let last = -1, sy = 0;
 
 function render(elapsed) {
   const t = elapsed % LOOP;
   const intro = FIXED !== null ? 1 : easeIO(clamp01(elapsed / 2.4));
   mouse.lerp(aim, FIXED !== null ? 1 : .05);
-  const sy = Math.min(scrollY / innerHeight, 1.3);
+  sy += ((SCROLL ?? Math.min(scrollY / innerHeight, 1.3)) - sy) * (FIXED !== null ? 1 : .08);
+  const toMac = easeIO(clamp01(sy / .7));
 
   // camera: eased entrance, slow drift, damped parallax, scroll dolly
-  camera.position.set(Math.sin(elapsed * .09) * .9 + mouse.x * 1.8, 3.4 + (1 - intro) * 2.5 - mouse.y * 1.0 + sy * 2.2, (portrait ? 30 : 26.5) + (1 - intro) * 6 + sy * 4);
-  camera.lookAt(0, -.2 - sy * 1.2, 0);
+  camera.position.set(Math.sin(elapsed * .09) * .9 + mouse.x * 1.8 + toMac * P.mac.x * .55, 3.4 + (1 - intro) * 2.5 - mouse.y * 1.0 + toMac * .6, (portrait ? 30 : 26.5) + (1 - intro) * 6 - toMac * 9);
+  camera.lookAt(toMac * P.mac.x * .8, -.2 + toMac * .2, 0);
 
   // idle life
   phone.rotation.set(Math.sin(elapsed * .6) * .03, .32 + Math.sin(elapsed * .4) * .08, Math.sin(elapsed * .5) * .02);
@@ -261,11 +304,12 @@ function render(elapsed) {
   // screens follow the same clock (redraw ~20fps)
   if (Math.abs(t - last) > .05 || t < last) { drawPhone(t); drawMac(t); last = t; }
 
-  renderer.render(scene, camera);
+  composer.render();
 }
 
 const hdr = new RGBELoader().loadAsync(new URL('assets/studio_small_09_1k.hdr', import.meta.url).href);
 await document.fonts.ready.catch(() => {});
+await macReady.catch(e => console.warn('laptop model failed', e));
 hdr.then(tex => { tex.mapping = THREE.EquirectangularReflectionMapping; scene.environment = tex; }).catch(() => { scene.environmentIntensity = 0; })
   .finally(() => {
     if (FIXED !== null) { renderer.setAnimationLoop(() => render(FIXED)); document.title = 'ready'; return; }

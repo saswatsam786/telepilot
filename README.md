@@ -229,6 +229,14 @@ bun install && bun test     # unit + integration tests, no network, fake claude
 
 The plugin lives in [`plugins/telepilot`](plugins/telepilot) and has no runtime dependencies. The 3D landing page is [`docs/index.html`](docs/index.html). See the plugin's [README](plugins/telepilot/README.md) for the fakechat dev loop.
 
+## 🙏 Credits
+
+The [landing page](https://saswatsam786.github.io/telepilot/) uses these freely licensed assets:
+
+- **"Laptop / MacBook Pro"** 3D model by Alex Safayan, [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/), via [Poly Pizza](https://poly.pizza/m/27hcX_w47Jb). Re-materialled, with a live terminal on its screen.
+- **"Studio Small 09"** HDRI by Sergej Majboroda, [CC0](https://creativecommons.org/publicdomain/zero/1.0/), via [Poly Haven](https://polyhaven.com/a/studio_small_09).
+- [three.js](https://threejs.org) (MIT) and [Lenis](https://github.com/darkroomengineering/lenis) (MIT).
+
 <div align="center">
 <br>
 
