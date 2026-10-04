@@ -10,10 +10,10 @@
 <meta name="theme-color" content="#f7f6f3">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://saswatsam786.github.io/telepilot/">
-<meta property="og:image" content="https://saswatsam786.github.io/telepilot/assets/og.png">
+<meta property="og:image" content="https://saswatsam786.github.io/telepilot/assets/og.jpg">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://saswatsam786.github.io/telepilot/assets/og.png">
+<meta name="twitter:image" content="https://saswatsam786.github.io/telepilot/assets/og.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -190,7 +190,10 @@
 
   /* use cases */
   .cases{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:64px}
-  .case{padding:26px;display:flex;flex-direction:column}
+  .case{padding:0 0 26px;display:flex;flex-direction:column}
+  .case>*:not(.ucimg){margin-left:26px;margin-right:26px}
+  .ucimg{width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;display:block;margin-bottom:20px}
+  .case.wide .ucimg{aspect-ratio:32/9}
   .case.wide{grid-column:span 2}
   .when{font:500 11.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--coral)}
   .case h3{font-size:19px;font-weight:600;letter-spacing:-.02em;margin:10px 0 16px}
@@ -398,60 +401,70 @@
       <p class="sub r d2">A few real moments where telepilot saves a walk back to the desk.</p>
       <div class="cases">
         <article class="card case wide r">
+          <img class="ucimg" src="assets/uc/couch.webp" alt="Relaxing on a sofa at home, checking a phone" width="720" height="720" loading="lazy" decoding="async">
           <div class="when">7:40 PM · couch</div>
           <h3>Fix a failing CI from the couch</h3>
           <div class="mini"><span class="b me">@api CI is red on main, fix it</span><span class="b bot">[api] Flaky date test. Patched, pushed, CI green ✅</span></div>
           <p>A phone ping is enough. The session reads the logs, patches, pushes, and replies when it's green.</p>
         </article>
         <article class="card case r d2">
+          <img class="ucimg" src="assets/uc/dog.webp" alt="Walking an indie dog in a Bengaluru park, phone in hand" width="720" height="720" loading="lazy" decoding="async">
           <div class="when">6:15 PM · dog walk</div>
           <h3>Walk the dog, ship a PR</h3>
           <div class="mini"><span class="b me">🎙 0:21 voice note</span><span class="b bot">[web] Added dark mode toggle. PR #142 opened ↗</span></div>
           <p>Your voice note is transcribed on the Mac, routed to the right session, and it opens the PR.</p>
         </article>
         <article class="card case r d3">
+          <img class="ucimg" src="assets/uc/sessions.webp" alt="A home-office desk with a laptop terminal, a phone and chai" width="720" height="720" loading="lazy" decoding="async">
           <div class="when">Any time</div>
           <h3>What's everyone doing?</h3>
           <div class="mini"><span class="b me">what's everyone working on?</span><span class="b bot">api: tests 80% · app: building iOS · infra: idle</span></div>
           <p>Run backend, app and infra sessions side by side and get one status roll-up in a single message.</p>
         </article>
         <article class="card case r">
+          <img class="ucimg" src="assets/uc/approve.webp" alt="An office-goer tapping his phone on a Mumbai local train" width="720" height="720" loading="lazy" decoding="async">
           <div class="when">Lunch</div>
           <h3>Approve from anywhere</h3>
           <div class="mini"><span class="b bot">🔐 [infra] wants to run terraform apply<br>[ ✅ yes ]  [ ❌ no ]</span><span class="b me">✅ yes</span></div>
           <p>Risky commands wait for you. One tap on your phone and the session continues, or doesn't.</p>
         </article>
         <article class="card case r d2">
+          <img class="ucimg" src="assets/uc/mac.webp" alt="Locking the apartment door while glancing at a phone" width="720" height="720" loading="lazy" decoding="async">
           <div class="when">Left the office</div>
           <h3>Your Mac, remotely</h3>
           <div class="mini"><span class="b me">/lock  ·  /screenshot  ·  find invoice.pdf</span><span class="b bot">🔒 Locked. 📸 Screenshot sent. 📄 Found in ~/Documents</span></div>
           <p>Lock or unlock, open apps, grab a screenshot or camera photo, find and send a file.</p>
         </article>
         <article class="card case r d3">
+          <img class="ucimg" src="assets/uc/morning.webp" alt="Masala chai in a kulhad next to a phone on a sunny café table" width="720" height="720" loading="lazy" decoding="async">
           <div class="when">8:00 AM · coffee</div>
           <h3>Morning briefing</h3>
           <div class="mini"><span class="b me">morning briefing</span><span class="b bot">3 meetings, 2 PRs need review, 1 Sentry alert</span></div>
           <p>Your sessions use your own connectors (calendar, GitHub, Sentry) and sum up the day in chat.</p>
         </article>
         <article class="card case r">
+          <img class="ucimg" src="assets/uc/night.webp" alt="A phone on a bedside table at night" width="720" height="720" loading="lazy" decoding="async">
           <div class="when">11:30 PM · bed</div>
           <h3>Overnight refactor</h3>
           <div class="mini"><span class="b me">/new refactor ~/code/app migrate to the new router</span><span class="b bot">[refactor] Done: 41 files, tests pass. Summary + diff 📎</span></div>
           <p>Start it before bed and wake up to a summary and the diff, with no laptop needed.</p>
         </article>
         <article class="card case r d2">
+          <img class="ucimg" src="assets/uc/incident.webp" alt="Checking a phone in an auto-rickshaw at night" width="720" height="720" loading="lazy" decoding="async">
           <div class="when">2:07 AM · on call</div>
           <h3>Incident response</h3>
           <div class="mini"><span class="b me">@api look at the new Sentry alert</span><span class="b bot">[api] Null user in /checkout. Fix ready. Push it?</span></div>
           <p>An alert comes in, the session investigates with your tools and proposes a fix. You decide.</p>
         </article>
         <article class="card case wide r d3">
+          <img class="ucimg" src="assets/uc/deploy.webp" alt="Three teammates around a laptop in a co-working space" width="720" height="720" loading="lazy" decoding="async">
           <div class="when">Release day</div>
           <h3>Deploys, one step at a time</h3>
           <div class="mini"><span class="b me">@infra build, test, merge, deploy</span><span class="b bot">✓ build ✓ tests ✓ merged 🔐 deploy to prod? yes / no</span></div>
           <p>Build, test, merge and deploy in order, with a confirmation at every risky step.</p>
         </article>
         <article class="card case r">
+          <img class="ucimg" src="assets/uc/ask.webp" alt="Typing on a phone in a clinic waiting room" width="720" height="720" loading="lazy" decoding="async">
           <div class="when">Waiting room</div>
           <h3>Ask anything about your code</h3>
           <div class="mini"><span class="b me">@api where do we refresh auth tokens?</span><span class="b bot">[api] src/auth/session.ts:88, every 15 min</span></div>
