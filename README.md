@@ -254,13 +254,7 @@ The plugin lives in [`plugins/telepilot`](plugins/telepilot) and has no runtime 
 
 ## 🙏 Credits
 
-Photos on the [landing page](https://saswatsam786.github.io/telepilot/) are from [Unsplash](https://unsplash.com), free to use under the [Unsplash License](https://unsplash.com/license):
-
-- Desk with MacBook Pro by [Iewek Gnos](https://unsplash.com/photos/hhUx08PuYpc)
-- Commuters on a train by [John Lockwood](https://unsplash.com/photos/y2pvFL57Qnk)
-- Phone against the sky by [Daniel J. Schwarz](https://unsplash.com/photos/PAzD4ArCkuw)
-
-Smooth scrolling by [Lenis](https://github.com/darkroomengineering/lenis) (MIT).
+Smooth scrolling on the [landing page](https://saswatsam786.github.io/telepilot/) by [Lenis](https://github.com/darkroomengineering/lenis) (MIT).
 
 <div align="center">
 <br>

@@ -7,3 +7,4 @@ node_modules/
 .telepilot/
 coverage/
 .design/
+docs/assets/ai/

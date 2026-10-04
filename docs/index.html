@@ -87,7 +87,7 @@
     box-shadow:0 0 0 1px rgba(15,17,26,.06),0 50px 100px -45px rgba(15,17,26,.5)}
   .shot{margin-top:56px;aspect-ratio:16/9}
   .shot img,.band img,.cta-photo img{position:absolute;left:0;top:-7%;width:100%;height:114%;object-fit:cover;will-change:transform;z-index:-1}
-  .shot img{object-position:50% 60%}
+  .shot img{object-position:50% 55%}
   .float{position:absolute;z-index:2;text-align:left;font-size:14px;line-height:1.45;color:var(--t1);padding:12px 14px;border-radius:16px;
     background:rgba(255,255,255,.8);backdrop-filter:blur(16px) saturate(170%);-webkit-backdrop-filter:blur(16px) saturate(170%);
     border:1px solid rgba(255,255,255,.65);box-shadow:0 24px 48px -20px rgba(15,17,26,.45);animation:bob 7s ease-in-out infinite}
@@ -103,7 +103,7 @@
   @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
 
   .band{aspect-ratio:21/9;display:flex;align-items:flex-end}
-  .band img{object-position:50% 40%}
+  .band img{object-position:50% 45%}
   .band::after,.cta-photo::after{content:"";position:absolute;inset:0;z-index:-1}
   .band::after{background:linear-gradient(90deg,rgba(10,12,18,.72) 0%,rgba(10,12,18,.35) 45%,transparent 70%)}
   .band .copy{padding:clamp(24px,5vw,56px);max-width:620px}
@@ -300,21 +300,19 @@
       <a class="btn lg" href="#how">How it works</a>
     </div>
     <div class="shot r d3" data-parallax>
-      <img src="assets/photos/desk-2000.webp" srcset="assets/photos/desk-1200.webp 1200w, assets/photos/desk-2000.webp 2000w, assets/photos/desk-2800.webp 2800w" sizes="(max-width: 1208px) 100vw, 1160px" alt="A MacBook Pro on a desk in warm evening light" width="2800" height="2100" fetchpriority="high" decoding="async">
+      <img src="assets/photos/hero-1672.webp" srcset="assets/photos/hero-1200.webp 1200w, assets/photos/hero-1672.webp 1672w" sizes="(max-width: 1208px) 100vw, 1160px" alt="A sunlit work-from-home desk in an Indian apartment with a laptop, phone and a glass of chai" width="1672" height="941" fetchpriority="high" decoding="async">
       <div class="float f1"><small><i></i>Telegram · you</small>@api run the tests and push if green</div>
       <div class="float f3 dark"><em>❯</em> Running 128 tests…<br><b>✓</b> 128 passed  <b>✓</b> pushed to main</div>
       <div class="float f2"><small><i style="background:var(--coral)"></i>telepilot · approval</small><span class="tag">🔐 [api]</span> wants to run <code>git push origin main</code><div class="yn"><span>✅ yes</span><span>❌ no</span></div></div>
-      <span class="credit">Photo: <a href="https://unsplash.com/photos/hhUx08PuYpc">Iewek Gnos</a> / Unsplash</span>
     </div>
   </header>
 
   <section class="story" style="padding-bottom:0">
     <div class="wrap">
       <div class="band on-dark r" data-parallax>
-        <img src="assets/photos/commute-2000.webp" srcset="assets/photos/commute-1200.webp 1200w, assets/photos/commute-2000.webp 2000w, assets/photos/commute-2800.webp 2800w" sizes="(max-width: 1208px) 100vw, 1160px" alt="Commuters on a train looking at their phones" width="2800" height="1867" loading="lazy" decoding="async">
-        <div class="copy"><div class="kicker">8:40 train</div><h2>You left a refactor running.<br><span class="accent">Now you're on the train.</span></h2></div>
+        <img src="assets/photos/train-1672.webp" srcset="assets/photos/train-1200.webp 1200w, assets/photos/train-1672.webp 1672w" sizes="(max-width: 1208px) 100vw, 1160px" alt="An office-goer on a Mumbai local train at dawn, tapping his phone" width="1254" height="1254" loading="lazy" decoding="async">
+        <div class="copy"><div class="kicker">7:40 AM · Mumbai local</div><h2>You left a refactor running.<br><span class="accent">Now you're on the train.</span></h2></div>
         <div class="float f4"><small><i></i>telepilot · api</small><span class="tag">[api]</span> 128/128 tests pass. Pushed to main ✅</div>
-        <span class="credit">Photo: <a href="https://unsplash.com/photos/y2pvFL57Qnk">John Lockwood</a> / Unsplash</span>
       </div>
     </div>
   </section>
@@ -504,7 +502,7 @@
   <section class="closing">
     <div class="wrap">
       <div class="cta-photo on-dark r" data-parallax>
-        <img src="assets/photos/sky-2000.webp" srcset="assets/photos/sky-1200.webp 1200w, assets/photos/sky-2000.webp 2000w, assets/photos/sky-2800.webp 2800w" sizes="(max-width: 1208px) 100vw, 1160px" alt="A hand holding up a phone against a cloudy sky" width="2800" height="1867" loading="lazy" decoding="async">
+        <img src="assets/photos/beach-1672.webp" srcset="assets/photos/beach-1200.webp 1200w, assets/photos/beach-1672.webp 1672w" sizes="(max-width: 1208px) 100vw, 1160px" alt="A woman walking barefoot on a Goa beach at sunset, phone in hand" width="1672" height="941" loading="lazy" decoding="async">
         <div class="copy">
           <h2>Close the laptop.<br><span class="accent">Keep shipping.</span></h2>
           <div class="ctas">
@@ -512,7 +510,6 @@
             <a class="btn lg" href="#install">Install</a>
           </div>
         </div>
-        <span class="credit">Photo: <a href="https://unsplash.com/photos/PAzD4ArCkuw">Daniel J. Schwarz</a> / Unsplash</span>
       </div>
     </div>
   </section>
