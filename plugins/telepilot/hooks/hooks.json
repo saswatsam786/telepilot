@@ -1,0 +1,41 @@
+{
+  "description": "telepilot: post routed results to Telegram, relay approvals to the phone, guard remote-driven turns",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/bun.sh\" \"${CLAUDE_PLUGIN_ROOT}/src/hooks.ts\" session-start", "timeout": 10 }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          { "type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/bun.sh\" \"${CLAUDE_PLUGIN_ROOT}/src/hooks.ts\" guard", "timeout": 10 }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          { "type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/bun.sh\" \"${CLAUDE_PLUGIN_ROOT}/src/hooks.ts\" permission", "timeout": 600 }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/bun.sh\" \"${CLAUDE_PLUGIN_ROOT}/src/hooks.ts\" stop", "timeout": 30 }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          { "type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/bun.sh\" \"${CLAUDE_PLUGIN_ROOT}/src/hooks.ts\" stop", "timeout": 30 }
+        ]
+      }
+    ]
+  }
+}

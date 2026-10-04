@@ -1,0 +1,15 @@
+{
+  "name": "telepilot",
+  "owner": { "name": "saswatsam786" },
+  "metadata": {
+    "description": "telepilot — control your Claude Code sessions and your Mac from Telegram or iMessage."
+  },
+  "plugins": [
+    {
+      "name": "telepilot",
+      "source": "./plugins/telepilot",
+      "description": "Route Telegram messages to any named or new Claude Code session, relay approvals to your phone, and control your Mac.",
+      "category": "productivity"
+    }
+  ]
+}

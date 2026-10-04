@@ -1,0 +1,39 @@
+{
+  "enabledPlugins": {
+    "telegram@claude-plugins-official": false,
+    "imessage@claude-plugins-official": false
+  },
+  "crossSessionInbound": "accept",
+  "permissions": {
+    "allow": [
+      "mcp__plugin_telegram_telegram__reply",
+      "mcp__plugin_telegram_telegram__react",
+      "mcp__plugin_telegram_telegram__edit_message",
+      "mcp__plugin_telegram_telegram__download_attachment",
+      "mcp__plugin_imessage_imessage__reply",
+      "mcp__plugin_telepilot_telepilot__route",
+      "mcp__plugin_telepilot_telepilot__send_to",
+      "mcp__plugin_telepilot_telepilot__delegate",
+      "mcp__plugin_telepilot_telepilot__session_new",
+      "mcp__plugin_telepilot_telepilot__sessions_list",
+      "mcp__plugin_telepilot_telepilot__session_logs",
+      "mcp__plugin_telepilot_telepilot__session_stop",
+      "mcp__plugin_telepilot_telepilot__set_active",
+      "mcp__plugin_telepilot_telepilot__approve",
+      "mcp__plugin_telepilot_telepilot__projects",
+      "mcp__plugin_telepilot_telepilot__screen_state",
+      "mcp__plugin_telepilot_telepilot__wake_screen",
+      "mcp__plugin_telepilot_telepilot__screenshot",
+      "mcp__plugin_telepilot_telepilot__system_status",
+      "mcp__plugin_telepilot_telepilot__open",
+      "mcp__plugin_telepilot_telepilot__apps",
+      "mcp__plugin_telepilot_telepilot__shortcuts_list",
+      "mcp__plugin_telepilot_telepilot__spotlight",
+      "mcp__plugin_telepilot_telepilot__notify",
+      "mcp__plugin_telepilot_telepilot__volume",
+      "mcp__plugin_telepilot_telepilot__display",
+      "mcp__plugin_telepilot_telepilot__share_file",
+      "mcp__plugin_telepilot_telepilot__transcribe"
+    ]
+  }
+}

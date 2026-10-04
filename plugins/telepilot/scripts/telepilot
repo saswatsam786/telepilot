@@ -1,0 +1,565 @@
+#!/bin/bash
+# telepilot — run the hub (Claude Code + a chat channel + the telepilot plugin) in tmux, keep it
+# alive, and diagnose problems. macOS bash 3.2 compatible.
+#
+#   telepilot setup [--transport telegram|imessage]   # guided setup: deps, bot, hub, pairing, service
+#   telepilot pair [--wait 180] [--approve CODE]      # approve your Telegram account
+#   telepilot permissions                             # trigger macOS permission pop-ups once
+#   telepilot allow-tools                             # let sessions use telepilot's tools (one rule)
+#   telepilot unlock-setup                            # once at the Mac: let /unlock work (+ self-test)
+#   telepilot start|stop|restart|status|logs|attach|doctor
+#   telepilot stop --all                              # kill switch: hub + sessions it started
+#   telepilot service install|uninstall               # LaunchAgent that runs `telepilot supervise`
+#
+# Options: --name hub  --dir ~/.telepilot/hub  --model sonnet  --mode auto|manual  (remembered)
+#          --channel plugin:telegram@claude-plugins-official  --plugin-dir PATH (development)
+
+set -u
+export PATH="$HOME/.local/bin:$HOME/.bun/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+
+NAME="${TELEPILOT_HUB:-hub}"
+TP_HOME="${TELEPILOT_HOME:-$HOME/.telepilot}"
+DIR="$TP_HOME/hub"
+MODEL="${TELEPILOT_HUB_MODEL:-sonnet}"
+MODE="${TELEPILOT_HUB_MODE:-auto}"
+CHANNEL="${TELEPILOT_CHANNEL:-plugin:telegram@claude-plugins-official}"
+PLUGIN_DIR="${TELEPILOT_PLUGIN_DIR:-}"
+YES=0; JSON=0; WAIT=180; APPROVE=""; TOKEN_STDIN=0; TOKEN_ARG=""; NO_SERVICE=0; CHANNEL_SET=0; BOT=""
+STATE_DIR="${TELEGRAM_STATE_DIR:-${CLAUDE_CONFIG_DIR:-$HOME/.claude}/channels/telegram}"
+
+# Defaults remembered from the last `telepilot start` (so restart/service keep your folder and channel).
+if [ -f "$TP_HOME/config.json" ] && command -v bun >/dev/null 2>&1; then
+  eval "$(bun -e '
+    const c=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));
+    const q=v=>"\x27"+String(v).replace(/\x27/g,"\x27\\\x27\x27")+"\x27";
+    for (const [k,v] of [["DIR",c.hubDir],["CHANNEL",c.channel],["MODEL",c.hubModel],["MODE",c.hubMode]]) if (v) console.log(k+"="+q(v));
+    if (c.channel) console.log("CHANNEL_SET=1");
+  ' "$TP_HOME/config.json" 2>/dev/null)"
+fi
+
+CMD="${1:-help}"
+[ $# -gt 0 ] && shift
+SUB=""
+case "$CMD" in service) SUB="${1:-}"; [ $# -gt 0 ] && shift ;; esac
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --name) NAME="$2"; shift 2 ;;
+    --dir) DIR="$2"; shift 2 ;;
+    --model) MODEL="$2"; shift 2 ;;
+    --mode) MODE="$2"; shift 2 ;;
+    --channel) CHANNEL="$2"; CHANNEL_SET=1; shift 2 ;;
+    --transport)
+      case "${2:-}" in
+        telegram) CHANNEL="plugin:telegram@claude-plugins-official" ;;
+        imessage) CHANNEL="plugin:imessage@claude-plugins-official" ;;
+        *) echo "telepilot: --transport telegram|imessage" >&2; exit 1 ;;
+      esac
+      CHANNEL_SET=1; shift 2 ;;
+    --plugin-dir) PLUGIN_DIR="$2"; shift 2 ;;
+    --token-stdin) TOKEN_STDIN=1; shift ;;
+    --token) TOKEN_ARG="$2"; shift 2 ;;
+    --yes|-y) YES=1; shift ;;
+    --no-service) NO_SERVICE=1; shift ;;
+    --wait) WAIT="$2"; shift 2 ;;
+    --approve) APPROVE="$2"; shift 2 ;;
+    --json) JSON=1; shift ;;
+    *) N="$1"; shift ;;
+  esac
+done
+
+SESSION="tp-$NAME"
+LABEL="dev.telepilot.$NAME"
+PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
+CHANNEL_PLUGIN="${CHANNEL#plugin:}"
+mkdir -p "$TP_HOME" && chmod 700 "$TP_HOME"
+
+ok()   { printf '  \033[32m✓\033[0m %s\n' "$*"; }
+bad()  { printf '  \033[31m✗\033[0m %s\n' "$*"; }
+info() { printf '  · %s\n' "$*"; }
+die()  { echo "telepilot: $*" >&2; exit 1; }
+
+json_get() { # json_get <file> <js expression on `j`>
+  [ -f "$1" ] || return 1
+  bun -e "const j=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'));const v=($2);if(v===undefined||v===null)process.exit(1);console.log(typeof v==='object'?JSON.stringify(v):v)" "$1" 2>/dev/null
+}
+
+hub_alive() {
+  tmux has-session -t "$SESSION" 2>/dev/null || return 1
+  [ "$(tmux list-panes -t "$SESSION" -F '#{pane_dead}' 2>/dev/null | head -1)" != "1" ]
+}
+
+poller_alive() {
+  local pid
+  pid="$(cat "$STATE_DIR/bot.pid" 2>/dev/null)" || return 1
+  [ -n "$pid" ] && ps -p "$pid" -o args= 2>/dev/null | grep -q 'server.ts'
+}
+
+poller_owned_by_hub() { # is the bot's poller a descendant of the hub's Claude process?
+  local p hub i
+  p="$(cat "$STATE_DIR/bot.pid" 2>/dev/null)" || return 1
+  hub="$(json_get "$TP_HOME/state.json" 'j.hub&&j.hub.pid')" || return 0   # unknown: don't cry wolf
+  for i in 1 2 3 4 5 6; do
+    p="$(ps -o ppid= -p "$p" 2>/dev/null | tr -d ' ')"
+    { [ -z "$p" ] || [ "$p" -le 1 ]; } && return 1
+    [ "$p" = "$hub" ] && return 0
+  done
+  return 1
+}
+
+notify_phone() { # best effort; never puts the token on a command line
+  local token chat
+  token="$(sed -n 's/^TELEGRAM_BOT_TOKEN=//p' "$STATE_DIR/.env" 2>/dev/null | head -1)"
+  chat="$(json_get "$STATE_DIR/access.json" 'j.allowFrom&&j.allowFrom[0]')"
+  [ -n "$token" ] && [ -n "$chat" ] || return 0
+  printf 'url = "https://api.telegram.org/bot%s/sendMessage"\n' "$token" |
+    curl -s -m 15 -K - --data-urlencode "chat_id=$chat" --data-urlencode "text=$1" >/dev/null 2>&1 || true
+}
+
+write_config() {
+  bun -e "
+    const fs=require('fs'), f=process.argv[1]; let c={};
+    try { c=JSON.parse(fs.readFileSync(f,'utf8')) } catch {}
+    c.hubName=process.argv[2]; c.telegramStateDir=process.argv[3];
+    c.transport=/imessage/.test(process.argv[4])?'imessage':'telegram';
+    c.channel=process.argv[4]; c.hubDir=process.argv[5]; c.hubModel=process.argv[6]; c.hubMode=process.argv[7];
+    fs.writeFileSync(f, JSON.stringify(c,null,2)+'\n', {mode:0o600});
+  " "$TP_HOME/config.json" "$NAME" "$STATE_DIR" "$CHANNEL" "$DIR" "$MODEL" "$MODE" || die "could not write $TP_HOME/config.json"
+}
+
+start() {
+  command -v claude >/dev/null || die "claude not found (install Claude Code)"
+  command -v tmux >/dev/null || die "tmux not found: brew install tmux"
+  command -v bun >/dev/null || die "bun not found: brew install oven-sh/bun/bun"
+  if hub_alive; then echo "hub '$NAME' is already running (telepilot attach)"; return 0; fi
+  tmux kill-session -t "$SESSION" 2>/dev/null
+  DIR="${DIR/#\~/$HOME}"
+  [ "$DIR" = "$TP_HOME/hub" ] && mkdir -p "$DIR"
+  [ -d "$DIR" ] || die "no such folder: $DIR"
+  write_config
+  # The hub's own tools are pre-approved for this session only (user settings stay untouched):
+  # the channel's tools (reply, react, …) and telepilot's routing + low-risk Mac tools.
+  # run_applescript, clipboard and shortcuts_run still ask, and those prompts reach the phone.
+  local chan="${CHANNEL_PLUGIN%@*}" t allow=""
+  for t in route send_to delegate session_new sessions_list session_logs session_stop set_active approve projects \
+           screen_state wake_screen screenshot system_status open apps shortcuts_list spotlight notify volume display transcribe share_file; do
+    allow="$allow,\"mcp__plugin_telepilot_telepilot__$t\""
+  done
+  local settings="{\"enabledPlugins\":{\"$CHANNEL_PLUGIN\":true},\"permissions\":{\"allow\":[\"mcp__plugin_${chan}_${chan}\"$allow]}}"
+  local args=(--name "$NAME" --permission-mode "$MODE" --channels "$CHANNEL" --settings "$settings")
+  [ -n "$MODEL" ] && args+=(--model "$MODEL")
+  [ -n "$PLUGIN_DIR" ] && args+=(--plugin-dir "$PLUGIN_DIR")
+  tmux new-session -d -s "$SESSION" -c "$DIR" -x 200 -y 50 \
+    -e TELEPILOT_ROLE=hub -e "TELEPILOT_HOME=$TP_HOME" -e "TELEGRAM_STATE_DIR=$STATE_DIR" -e "PATH=$PATH" \
+    -e IMESSAGE_APPEND_SIGNATURE=false \
+    caffeinate -i claude "${args[@]}" || die "tmux could not start the hub"
+  tmux set-option -t "$SESSION" remain-on-exit on >/dev/null
+  echo "hub '$NAME' started in tmux session $SESSION (model ${MODEL:-default}, $MODE mode)"
+  echo "first run: 'telepilot attach' to accept any prompts, then detach with Ctrl-b d"
+}
+
+stop_hub() { tmux kill-session -t "$SESSION" 2>/dev/null && echo "hub '$NAME' stopped" || echo "hub '$NAME' was not running"; }
+
+stop_all() {
+  stop_hub
+  local ids
+  ids="$(json_get "$TP_HOME/state.json" "Object.values(j.sessions||{}).filter(s=>s.createdBy==='telepilot'&&s.shortId).map(s=>s.shortId).join(' ')")"
+  for id in $ids; do claude stop "$id" >/dev/null 2>&1 && echo "stopped session $id"; done
+}
+
+status() {
+  echo "telepilot hub '$NAME'"
+  if hub_alive; then ok "hub running (tmux $SESSION)"; else bad "hub not running — telepilot start"; fi
+  case "$CHANNEL_PLUGIN" in
+    telegram@*)
+      if ! poller_alive; then bad "Telegram connection not running — telepilot restart"
+      elif poller_owned_by_hub; then ok "Telegram connection held by the hub (pid $(cat "$STATE_DIR/bot.pid"))"
+      else bad "Telegram connection is held by ANOTHER session, so the hub can't hear you — telepilot restart"; fi ;;
+  esac
+  if launchctl print "gui/$(id -u)/$LABEL" >/dev/null 2>&1; then ok "LaunchAgent $LABEL loaded"; else info "LaunchAgent not installed (telepilot service install)"; fi
+  local n
+  n="$(json_get "$TP_HOME/state.json" "Object.keys(j.sessions||{}).length")" && info "$n session(s) remembered; active: $(json_get "$TP_HOME/state.json" 'j.active' || echo none)"
+}
+
+logs() {
+  local lines="${N:-60}"
+  if tmux has-session -t "$SESSION" 2>/dev/null; then
+    echo "── hub screen ($SESSION) ──"
+    tmux capture-pane -p -J -t "$SESSION" -S "-$lines" | sed '/^[[:space:]]*$/d' | tail -n "$lines"
+  fi
+  [ -f "$TP_HOME/telepilot.log" ] && { echo "── $TP_HOME/telepilot.log ──"; tail -n 20 "$TP_HOME/telepilot.log"; }
+}
+
+doctor() {
+  echo "telepilot doctor"
+  local v auth
+  if command -v claude >/dev/null; then
+    v="$(claude --version 2>/dev/null | head -1)"; ok "Claude Code $v"
+    auth="$(claude auth status 2>/dev/null | sed -n 's/.*"authMethod": *"\([^"]*\)".*/\1/p' | head -1)"
+    case "$auth" in claude.ai|console|api*) ok "logged in ($auth)" ;; *) bad "not logged in with claude.ai or a Console API key (claude auth login)" ;; esac
+  else bad "claude not found"; fi
+  command -v bun >/dev/null && ok "bun $(bun --version)" || bad "bun missing: brew install oven-sh/bun/bun"
+  command -v tmux >/dev/null && ok "$(tmux -V)" || bad "tmux missing: brew install tmux"
+  grep -q "\"$CHANNEL_PLUGIN\"" "$HOME/.claude/plugins/installed_plugins.json" 2>/dev/null \
+    && ok "$CHANNEL_PLUGIN installed" || bad "$CHANNEL_PLUGIN missing: /plugin install $CHANNEL_PLUGIN"
+  case "$CHANNEL_PLUGIN" in
+    imessage@*) info "iMessage: the terminal running the hub needs Full Disk Access (System Settings → Privacy & Security)"
+                info "set ownerChatId in $TP_HOME/config.json to your self-chat id if results don't arrive" ;;
+    telegram@*) doctor_telegram ;;
+  esac
+  local s="$HOME/.claude/settings.json"
+  [ "$(json_get "$DIR/.claude/settings.local.json" "j.enabledPlugins&&j.enabledPlugins['$CHANNEL_PLUGIN']")" != "true" ] \
+    && ok "hub folder doesn't switch $CHANNEL_PLUGIN on by itself" || bad "the hub folder enables $CHANNEL_PLUGIN for any session started there — run: telepilot setup"
+  [ "$(json_get "$s" "j.enabledPlugins&&j.enabledPlugins['$CHANNEL_PLUGIN']")" != "true" ] \
+    && ok "$CHANNEL_PLUGIN not enabled user-wide (hub only)" || bad "$CHANNEL_PLUGIN is enabled for every session — set enabledPlugins[\"$CHANNEL_PLUGIN\"]=false in ~/.claude/settings.json and install it with --scope local in the hub folder"
+  [ "$(json_get "$s" 'j.crossSessionInbound')" = "accept" ] \
+    && ok "crossSessionInbound: accept" || info "crossSessionInbound not set — fine unless routed messages get held; then set it to \"accept\""
+  command -v ffmpeg >/dev/null && command -v whisper-cli >/dev/null && ok "voice transcription available" || info "voice notes: brew install ffmpeg whisper-cpp (optional)"
+  local undelivered; undelivered="$(grep -c '"failed":true' "$TP_HOME/outbox.jsonl" 2>/dev/null)"
+  [ "${undelivered:-0}" -gt 0 ] && bad "$undelivered message(s) could not be delivered — see $TP_HOME/outbox.jsonl and telepilot.log"
+  status
+}
+
+doctor_telegram() {
+  grep -q '^TELEGRAM_BOT_TOKEN=.' "$STATE_DIR/.env" 2>/dev/null && ok "bot token configured" || bad "no bot token: /telegram:configure <token>"
+  local policy count
+  policy="$(json_get "$STATE_DIR/access.json" 'j.dmPolicy' || echo pairing)"
+  count="$(json_get "$STATE_DIR/access.json" '(j.allowFrom||[]).length' || echo 0)"
+  [ "$count" -gt 0 ] && ok "$count paired Telegram account(s)" || bad "nobody paired: DM the bot, then /telegram:access pair <code>"
+  [ "$policy" = "allowlist" ] && ok "DM policy: allowlist" || bad "DM policy is '$policy': lock it with /telegram:access policy allowlist"
+}
+
+supervise() {
+  local misses=0
+  echo "$(date) supervise '$NAME' starting"
+  while true; do
+    if ! hub_alive; then
+      echo "$(date) hub down — starting"
+      start && notify_phone "telepilot: hub '$NAME' (re)started"
+      misses=0; sleep 90; continue
+    fi
+    case "$CHANNEL_PLUGIN" in
+      telegram@*)
+        if poller_alive && poller_owned_by_hub; then misses=0; else misses=$((misses + 1)); fi
+        if [ "$misses" -ge 3 ]; then
+          echo "$(date) Telegram poller dead — restarting hub"
+          stop_hub; sleep 2; start && notify_phone "telepilot: Telegram connection was lost; hub '$NAME' restarted"
+          misses=0; sleep 90; continue
+        fi ;;
+    esac
+    sleep 30
+  done
+}
+
+install_cli() {
+  mkdir -p "$HOME/.local/bin"
+  cp "$0" "$HOME/.local/bin/telepilot.new" && chmod 755 "$HOME/.local/bin/telepilot.new" && mv "$HOME/.local/bin/telepilot.new" "$HOME/.local/bin/telepilot"
+  echo "installed $HOME/.local/bin/telepilot"
+}
+
+service_install() {
+  install_cli >/dev/null
+  mkdir -p "$HOME/Library/LaunchAgents"
+  local d="${DIR/#\~/$HOME}"
+  cat > "$PLIST" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>$LABEL</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string><string>$HOME/.local/bin/telepilot</string><string>supervise</string>
+    <string>--name</string><string>$NAME</string>
+    <string>--dir</string><string>$d</string>
+    <string>--model</string><string>$MODEL</string>
+    <string>--mode</string><string>$MODE</string>
+    <string>--channel</string><string>$CHANNEL</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict><key>PATH</key><string>$PATH</string></dict>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>StandardOutPath</key><string>$TP_HOME/supervise.log</string>
+  <key>StandardErrorPath</key><string>$TP_HOME/supervise.log</string>
+</dict>
+</plist>
+EOF
+  launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null
+  launchctl bootstrap "gui/$(id -u)" "$PLIST" && echo "LaunchAgent $LABEL installed — the hub now starts at login and restarts if it dies"
+}
+
+service_uninstall() {
+  launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null
+  rm -f "$PLIST" && echo "LaunchAgent $LABEL removed (the hub keeps running until 'telepilot stop')"
+}
+
+# ───────────────────────────── guided setup ─────────────────────────────
+
+ask() { # ask "Question? [Y/n]" Y|N  — --yes answers yes; without a terminal the default wins
+  [ "$YES" = 1 ] && return 0
+  if [ -t 0 ]; then
+    local a; printf '  %s ' "$1"; read -r a
+    case "${a:-$2}" in [Yy]*) return 0 ;; *) return 1 ;; esac
+  fi
+  [ "$2" = Y ]
+}
+
+confirm() { # like ask, but never auto-yes: 0 yes, 1 no, 2 no terminal to ask on
+  [ -t 0 ] || return 2
+  local a; printf '  %s ' "$1"; read -r a
+  case "${a:-Y}" in [Yy]*) return 0 ;; *) return 1 ;; esac
+}
+
+is_telegram() { case "$CHANNEL_PLUGIN" in telegram@*) return 0 ;; *) return 1 ;; esac; }
+
+tg_token() { sed -n 's/^TELEGRAM_BOT_TOKEN=//p' "$STATE_DIR/.env" 2>/dev/null | head -1; }
+
+tg_bot_name() { # prints the bot's username if the token works (the token never appears on a command line)
+  [ -n "${1:-}" ] || return 1
+  printf 'url = "https://api.telegram.org/bot%s/getMe"\n' "$1" | curl -s -m 20 -K - |
+    bun -e 'const r=JSON.parse((await Bun.stdin.text())||"{}");if(!r.ok)process.exit(1);console.log(r.result.username)' 2>/dev/null
+}
+
+ensure_deps() {
+  command -v claude >/dev/null || die "Claude Code is not installed — see https://claude.com/claude-code"
+  claude auth status 2>/dev/null | grep -q '"loggedIn": *true' || die "Claude Code is not logged in — run: claude auth login"
+  local missing=""
+  command -v bun >/dev/null || missing="$missing oven-sh/bun/bun"
+  command -v tmux >/dev/null || missing="$missing tmux"
+  if [ -n "$missing" ]; then
+    command -v brew >/dev/null || die "please install:$missing (Homebrew not found — https://brew.sh)"
+    ask "Install$missing with Homebrew? [Y/n]" Y || die "telepilot needs:$missing"
+    brew install $missing >/dev/null || die "brew install failed"
+  fi
+  ok "Claude Code (logged in), Bun and tmux ready"
+}
+
+is_trusted() {
+  bun -e 'const c=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));process.exit(c.projects?.[process.argv[2]]?.hasTrustDialogAccepted?0:1)' \
+    "$HOME/.claude.json" "$1" 2>/dev/null
+}
+
+ensure_channel_plugin() {
+  local out other="telegram@claude-plugins-official"
+  is_telegram && other="imessage@claude-plugins-official"
+  mkdir -p "$DIR"
+  out="$(cd "$DIR" && claude plugin install "$CHANNEL_PLUGIN" --scope local 2>&1)" ||
+    echo "$out" | grep -qi "already installed" || die "could not install $CHANNEL_PLUGIN: $out"
+  # Installed, but switched OFF even in the hub folder: only the hub that `telepilot start`
+  # launches switches it on (via --settings), so no other session can ever take the bot over.
+  (cd "$DIR" && claude plugin disable "$CHANNEL_PLUGIN" --scope local >/dev/null 2>&1)
+  (cd "$DIR" && claude plugin disable "$other" --scope local >/dev/null 2>&1)
+  ok "${CHANNEL_PLUGIN%@*} plugin installed; only the hub turns it on (no other session can take the bot)"
+}
+
+ensure_telegram_token() {
+  local tok name
+  tok="$(tg_token)"
+  if [ -z "$TOKEN_ARG" ] && [ "$TOKEN_STDIN" != 1 ] && name="$(tg_bot_name "$tok")"; then
+    BOT="$name"; ok "bot @$BOT (token already saved)"; return 0
+  fi
+  if [ -n "$TOKEN_ARG" ]; then tok="$TOKEN_ARG"
+  elif [ "$TOKEN_STDIN" = 1 ]; then read -r tok
+  elif [ -t 0 ]; then
+    info "Create your bot: in Telegram open @BotFather → /newbot → choose a name → copy the token."
+    open "https://t.me/BotFather" >/dev/null 2>&1
+    printf '  Paste the bot token (hidden): '; read -rs tok; echo
+  else
+    die "no bot token — pass it with --token-stdin, or run 'telepilot setup' in a terminal"
+  fi
+  tok="$(printf '%s' "$tok" | tr -d '[:space:]')"
+  name="$(tg_bot_name "$tok")" || die "Telegram rejected that token — copy it again from @BotFather"
+  mkdir -p "$STATE_DIR" && chmod 700 "$STATE_DIR"
+  { grep -v '^TELEGRAM_BOT_TOKEN=' "$STATE_DIR/.env" 2>/dev/null; printf 'TELEGRAM_BOT_TOKEN=%s\n' "$tok"; } > "$STATE_DIR/.env.tmp"
+  mv "$STATE_DIR/.env.tmp" "$STATE_DIR/.env" && chmod 600 "$STATE_DIR/.env"
+  BOT="$name"; ok "bot @$BOT connected (token saved, readable only by you)"
+}
+
+ensure_imessage_access() {
+  if sqlite3 "$HOME/Library/Messages/chat.db" 'select 1' >/dev/null 2>&1; then ok "Full Disk Access OK (Messages readable)"; return 0; fi
+  bad "your terminal app needs Full Disk Access to read Messages"
+  open "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles" >/dev/null 2>&1
+  die "turn it on for your terminal in the window that just opened, quit and reopen the terminal, then run: telepilot setup --transport imessage"
+}
+
+# Pairing state lives in the official plugin's access.json; approving here is the same edit
+# `/telegram:access pair` makes, done from your terminal (never from a chat message).
+PAIR_JS='
+const fs=require("fs"), [mode, dir, code]=process.argv.slice(1), F=dir+"/access.json";
+let a; try { a=JSON.parse(fs.readFileSync(F,"utf8")) } catch { a={dmPolicy:"pairing",allowFrom:[],groups:{},pending:{}} }
+if (mode==="count") console.log((a.allowFrom||[]).length);
+if (mode==="ack" && !a.ackReaction) { a.ackReaction="👀"; fs.writeFileSync(F+".tmp", JSON.stringify(a,null,2)+"\n", {mode:0o600}); fs.renameSync(F+".tmp", F) }
+if (mode==="list") {
+  let tok=""; try { tok=(fs.readFileSync(dir+"/.env","utf8").match(/^TELEGRAM_BOT_TOKEN=(.+)$/m)||[])[1]||"" } catch {}
+  for (const [c,p] of Object.entries(a.pending||{})) {
+    if (p.expiresAt && p.expiresAt < Date.now()) continue;
+    let who=String(p.senderId);
+    try {
+      const r=await (await fetch("https://api.telegram.org/bot"+tok+"/getChat?chat_id="+p.chatId,{signal:AbortSignal.timeout(10000)})).json();
+      if (r.ok) who=[r.result.first_name,r.result.last_name].filter(Boolean).join(" ")+(r.result.username?" (@"+r.result.username+")":"");
+    } catch {}
+    console.log(c+"\t"+p.senderId+"\t"+who);
+  }
+}
+if (mode==="approve") {
+  const p=(a.pending||{})[code];
+  if (!p || (p.expiresAt && p.expiresAt < Date.now())) { console.error("telepilot: no pending pairing request with code "+code); process.exit(1) }
+  a.allowFrom=[...new Set([...(a.allowFrom||[]), String(p.senderId)])]; delete a.pending[code]; a.dmPolicy="allowlist"; a.ackReaction=a.ackReaction||"👀";
+  fs.writeFileSync(F+".tmp", JSON.stringify(a,null,2)+"\n", {mode:0o600}); fs.renameSync(F+".tmp", F);
+  fs.mkdirSync(dir+"/approved",{recursive:true,mode:0o700}); fs.writeFileSync(dir+"/approved/"+p.senderId, String(p.chatId));
+  console.log(p.senderId);
+}
+'
+
+pair_cmd() {
+  is_telegram || die "pairing is only for Telegram — iMessage already trusts your own self-chat"
+  local waited=0 line code sender who
+  if [ -n "$APPROVE" ]; then
+    sender="$(bun -e "$PAIR_JS" approve "$STATE_DIR" "$APPROVE")" || exit 1
+    ok "paired Telegram account $sender — the bot now ignores everyone else"
+    return 0
+  fi
+  [ -n "$BOT" ] || BOT="$(tg_bot_name "$(tg_token)")"
+  [ "$JSON" = 1 ] || info "Open https://t.me/${BOT:-your_bot} on your phone and tap Start (or send it any message)…"
+  [ "$JSON" = 1 ] || { [ -t 1 ] && open "https://t.me/$BOT" >/dev/null 2>&1; }
+  while :; do
+    line="$(bun -e "$PAIR_JS" list "$STATE_DIR" | head -1)"
+    [ -n "$line" ] && break
+    if [ "$waited" -ge "$WAIT" ]; then
+      [ "$JSON" = 1 ] && echo '{"pending":null}' || info "no pairing request arrived — run 'telepilot pair' to try again"
+      return 1
+    fi
+    sleep 2; waited=$((waited + 2))
+  done
+  code="$(printf '%s' "$line" | cut -f1)"; sender="$(printf '%s' "$line" | cut -f2)"; who="$(printf '%s' "$line" | cut -f3)"
+  if [ "$JSON" = 1 ]; then
+    bun -e 'console.log(JSON.stringify({pending:{code:process.argv[1],senderId:process.argv[2],who:process.argv[3]}}))' "$code" "$sender" "$who"
+    return 0
+  fi
+  confirm "Pairing request from $who — is that you? [Y/n]"
+  case $? in
+    0) bun -e "$PAIR_JS" approve "$STATE_DIR" "$code" >/dev/null || exit 1
+       ok "paired $who — the bot now ignores everyone else" ;;
+    1) info "not approved" ; return 1 ;;
+    *) info "approve it with: telepilot pair --approve $code" ; return 1 ;;
+  esac
+}
+
+allow_tools() { # one rule lets every session use telepilot's tools (asks first; backs up + validates)
+  local f="$HOME/.claude/settings.json" rule="mcp__plugin_telepilot_telepilot"
+  [ -f "$f" ] || echo '{}' > "$f"
+  python3 -m json.tool "$f" >/dev/null 2>&1 || die "$f isn't valid JSON — fix it first (python3 -m json.tool $f shows where)"
+  if grep -q "\"$rule\"" "$f"; then ok "telepilot's tools are already allowed"; return 0; fi
+  info "So your sessions can use telepilot's Mac tools (camera, screenshot, apps, sending files to your chat)"
+  info "without asking each time, this adds one rule to $f: $rule"
+  ask "Allow telepilot's tools? [Y/n]" Y || { info "skipped — you can run 'telepilot allow-tools' later"; return 0; }
+  cp "$f" "$f.bak-telepilot"
+  bun -e 'const fs=require("fs"),f=process.argv[1],r=process.argv[2];const s=JSON.parse(fs.readFileSync(f,"utf8"));s.permissions=s.permissions||{};s.permissions.allow=s.permissions.allow||[];if(!s.permissions.allow.includes(r))s.permissions.allow.push(r);fs.writeFileSync(f+".tmp",JSON.stringify(s,null,2)+"\n");fs.renameSync(f+".tmp",f)' "$f" "$rule" \
+    && python3 -m json.tool "$f" >/dev/null && ok "telepilot's tools allowed (backup: $f.bak-telepilot)" || { cp "$f.bak-telepilot" "$f"; die "could not update settings — restored the backup"; }
+}
+
+plugin_root() { # where Claude Code loads the telepilot plugin from
+  bun -e 'const j=JSON.parse(require("fs").readFileSync(process.env.HOME+"/.claude/plugins/installed_plugins.json","utf8"));const e=(j.plugins||{})["telepilot@telepilot"];console.log((e&&e[0]&&e[0].installPath)||"")' 2>/dev/null
+}
+
+unlock_setup() { # once, at the Mac: let /unlock type the login password (kept only in the Keychain)
+  [ -t 0 ] || die "run 'telepilot unlock-setup' in a terminal at the Mac"
+  echo "telepilot unlock-setup: /unlock will type your Mac login password. It is stored only in your Keychain, never in chat."
+  info "Type your Mac login password when asked (twice, hidden):"
+  security add-generic-password -a "$USER" -s telepilot-unlock -U -w || die "could not store the password"
+  ok "password stored in your Keychain (service telepilot-unlock)"
+  if osascript -e 'tell application "System Events" to keystroke ""' >/dev/null 2>&1; then ok "Accessibility OK (telepilot may type)"
+  else bad "allow this terminal app in Privacy & Security → Accessibility, then run 'telepilot unlock-setup' again"
+       open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility" >/dev/null 2>&1; return 1; fi
+  info "Run this from the same terminal app that runs the hub; macOS grants these permissions per app."
+  local root; root="$(plugin_root)"
+  [ -n "$root" ] && [ -f "$root/src/unlock-cli.ts" ] || { info "self-test skipped (plugin path not found)"; return 0; }
+  ask "Self-test now? Your screen locks, and after 6 seconds telepilot tries to unlock it. [Y/n]" Y || return 0
+  osascript -e 'tell application "System Events" to keystroke "q" using {control down, command down}' >/dev/null 2>&1
+  sleep 6
+  if bun "$root/src/unlock-cli.ts" test; then ok "/unlock works on this Mac"
+  else bad "macOS didn't accept the typed password on the lock screen. Use Touch ID / Apple Watch, or tell Claude the result"; fi
+}
+
+permissions() { # trigger macOS privacy prompts while someone is at the Mac
+  echo "telepilot permissions: macOS may show pop-ups now. Click Allow on each."
+  local f; f="$(mktemp -t tpshot).png"
+  if screencapture -x "$f" >/dev/null 2>&1 && [ -s "$f" ]; then ok "Screen Recording (screenshots)"
+  else bad "Screen Recording: allow your terminal app in Privacy & Security → Screen Recording, then restart it"
+       open "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture" >/dev/null 2>&1; fi
+  rm -f "$f"
+  if osascript -e 'tell application "System Events" to count processes' >/dev/null 2>&1; then ok "Automation: System Events (list and quit apps)"
+  else bad "Automation for System Events: click Allow, or enable it in Privacy & Security → Automation"; fi
+  if osascript -e 'tell application "System Events" to keystroke ""' >/dev/null 2>&1; then ok "Accessibility (keyboard and app control)"
+  else bad "Accessibility: allow your terminal app in Privacy & Security → Accessibility"
+       open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility" >/dev/null 2>&1; fi
+  if ! is_telegram; then
+    osascript -e 'tell application "Messages" to count chats' >/dev/null 2>&1 && ok "Automation: Messages" || bad "Automation for Messages: click Allow"
+  fi
+  info "Permissions belong to the terminal app that started the hub. Run this from that same app."
+}
+
+setup() {
+  echo "telepilot setup"
+  ensure_deps
+  [ "$0" -ef "$HOME/.local/bin/telepilot" ] || install_cli >/dev/null
+  ok "telepilot command ready (~/.local/bin/telepilot)"
+  if [ "$CHANNEL_SET" != 1 ] && [ -t 0 ] && [ "$YES" != 1 ]; then
+    local t; printf '  Chat app — 1) Telegram (recommended)  2) iMessage  [1]: '; read -r t
+    [ "$t" = 2 ] && CHANNEL="plugin:imessage@claude-plugins-official"
+  fi
+  CHANNEL_PLUGIN="${CHANNEL#plugin:}"
+  local old_token; old_token="$(tg_token)"
+  if is_telegram; then ensure_telegram_token; else ensure_imessage_access; fi
+  ensure_channel_plugin
+  if hub_alive && [ "$(json_get "$TP_HOME/config.json" 'j.channel')" = "$CHANNEL" ] && [ "$(tg_token)" = "$old_token" ]; then
+    ok "hub already running"
+  else
+    stop_hub >/dev/null 2>&1; start >/dev/null && ok "hub started (tmux session $SESSION, $MODE mode)"
+  fi
+  if ! is_trusted "$DIR"; then
+    if [ -t 0 ] && [ -t 1 ]; then
+      info "One-time step: Claude asks you to trust the hub's folder. Press Enter on it, then Ctrl-b d to come back here."
+      sleep 3; tmux attach -t "$SESSION"
+    else
+      bad "the hub is waiting for you to trust its folder — in a terminal run: telepilot attach, press Enter, then Ctrl-b d"
+    fi
+  fi
+  if is_telegram; then
+    if [ "$(bun -e "$PAIR_JS" count "$STATE_DIR")" = 0 ]; then pair_cmd || true; else ok "your Telegram account is paired"; fi
+    bun -e "$PAIR_JS" ack "$STATE_DIR" >/dev/null 2>&1   # 👀 reaction the moment a message arrives
+  fi
+  allow_tools
+  if [ -t 0 ] && [ "$YES" != 1 ]; then
+    ask "Check macOS permissions now (pop-ups may appear; click Allow)? [Y/n]" Y && permissions
+  fi
+  if [ "$NO_SERVICE" != 1 ] && ! launchctl print "gui/$(id -u)/$LABEL" >/dev/null 2>&1; then
+    ask "Keep the hub running all the time (starts at login, restarts itself)? [Y/n]" Y && service_install >/dev/null && ok "always-on service installed"
+  fi
+  echo
+  if is_telegram; then echo "  ✅ Ready — send /help to @${BOT:-your bot} on Telegram."
+  else echo "  ✅ Ready — text yourself /help in Messages."; fi
+  echo "     Check anytime: telepilot doctor"
+}
+
+
+case "$CMD" in
+  setup) setup ;;
+  pair) pair_cmd ;;
+  permissions) permissions ;;
+  allow-tools) allow_tools ;;
+  unlock-setup) unlock_setup ;;
+  start) start ;;
+  stop) [ "${N:-}" = "--all" ] && stop_all || stop_hub ;;
+  stop-all|panic) stop_all ;;
+  restart) stop_hub; sleep 1; start ;;
+  status) status ;;
+  logs) logs ;;
+  attach) exec tmux attach -t "$SESSION" ;;
+  doctor) doctor ;;
+  supervise) supervise ;;
+  install-cli) install_cli ;;
+  service)
+    case "$SUB" in install) service_install ;; uninstall) service_uninstall ;; *) die "usage: telepilot service install|uninstall" ;; esac ;;
+  *) sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//' ;;
+esac

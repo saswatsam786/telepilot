@@ -1,0 +1,8 @@
+{
+  "name": "telepilot",
+  "version": "0.1.0",
+  "description": "Drive all your Claude Code sessions from Telegram: route messages to any named or new session, get results and approval requests on your phone, and control your Mac.",
+  "author": { "name": "telepilot" },
+  "license": "MIT",
+  "keywords": ["telegram", "remote", "sessions", "dispatcher", "macos", "automation"]
+}
