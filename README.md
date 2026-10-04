@@ -12,7 +12,7 @@
 
 **Text any Claude Code session from Telegram or iMessage.<br>It does the work on your Mac and texts you back.**
 
-[![Live demo](https://img.shields.io/badge/✨_live_demo-3D-8b5cf6?style=flat-square)](https://saswatsam786.github.io/telepilot/)
+[![Live demo](https://img.shields.io/badge/✨_live_demo-3D-7a5cff?style=flat-square)](https://saswatsam786.github.io/telepilot/)
 [![Claude Code plugin](https://img.shields.io/badge/Claude_Code-plugin-d97757?style=flat-square&logo=anthropic&logoColor=white)](#-quick-start)
 [![Telegram](https://img.shields.io/badge/Telegram-2AABEE?style=flat-square&logo=telegram&logoColor=white)](#-how-it-works)
 [![iMessage](https://img.shields.io/badge/iMessage-34C759?style=flat-square&logo=imessage&logoColor=white)](#-how-it-works)
@@ -47,7 +47,11 @@ It's not another agent. **It's _your_ Claude Code**, with your plan, sessions, s
 </td>
 <td width="45%" align="center" valign="middle">
 
-<img src="assets/demo-chat.svg" alt="telepilot chat demo" width="300">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/demo-chat.svg">
+  <source media="(prefers-color-scheme: light)" srcset="assets/demo-chat-light.svg">
+  <img src="assets/demo-chat-light.svg" alt="telepilot chat demo" width="300">
+</picture>
 
 </td>
 </tr>

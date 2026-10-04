@@ -4,171 +4,544 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>telepilot</title>
-<meta name="description" content="Your Claude Code, in your pocket. Text any Claude Code session from Telegram or iMessage; it does the work on your Mac and texts you back.">
+<meta name="description" content="Your Claude Code, in your pocket. Text any Claude Code session from Telegram or iMessage. It does the work on your Mac and texts you back.">
 <meta property="og:title" content="telepilot: your Claude Code, in your pocket">
-<meta property="og:description" content="Drive every Claude Code session and your Mac from Telegram or iMessage.">
+<meta property="og:description" content="Drive every Claude Code session and your Mac from Telegram or iMessage. Open-source Claude Code plugin.">
+<meta name="theme-color" content="#f7f6f3">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#070a14;--fg:#eef1fb;--muted:#9aa3c0;--tg:#2aabee;--cl:#d97757;--card:rgba(20,26,51,.62);--line:rgba(255,255,255,.09)}
-  @media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--bg:#f5f7ff;--fg:#0b1020;--muted:#4b5470;--card:rgba(255,255,255,.72);--line:rgba(11,16,32,.1)}}
-  *{box-sizing:border-box;margin:0}
-  html,body{background:var(--bg);color:var(--fg);font-family:Inter,system-ui,-apple-system,sans-serif;overflow-x:hidden}
-  #scene{position:fixed;inset:0;width:100vw;height:100vh;display:block}
-  main{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 16px}
-  nav{display:flex;justify-content:space-between;align-items:center;padding:22px 0}
-  .logo{font-weight:800;font-size:20px;letter-spacing:-.5px}
-  .logo span{background:linear-gradient(90deg,var(--tg),var(--cl));-webkit-background-clip:text;background-clip:text;color:transparent}
-  a.gh{color:var(--fg);text-decoration:none;border:1px solid var(--line);padding:8px 14px;border-radius:999px;font-size:14px;backdrop-filter:blur(8px);background:var(--card)}
-  .hero{min-height:calc(100vh - 80px);display:flex;flex-direction:column;justify-content:center;width:100%;max-width:600px;min-width:0;padding-bottom:60px}
-  .hero>*{min-width:0;max-width:100%}
-  .hero .sub{text-shadow:0 2px 18px var(--bg)}
-  .pill{display:inline-block;align-self:flex-start;font-size:13px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:6px 12px;margin-bottom:22px;background:var(--card);backdrop-filter:blur(8px)}
-  h1{font-size:clamp(40px,7vw,76px);line-height:1.02;letter-spacing:-2.5px;font-weight:800}
-  h1 em{font-style:normal;background:linear-gradient(90deg,var(--tg),var(--cl));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .sub{font-size:clamp(17px,2.2vw,20px);color:var(--muted);margin:22px 0 30px;line-height:1.5}
-  .install{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;backdrop-filter:blur(14px);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:14px;line-height:1.9;position:relative;overflow-x:auto;max-width:100%;white-space:nowrap;padding-right:80px}
-  .install .p{color:var(--cl);user-select:none}
-  .copy{position:absolute;top:12px;right:12px;font:600 12px Inter,sans-serif;border:1px solid var(--line);background:transparent;color:var(--fg);border-radius:8px;padding:6px 10px;cursor:pointer}
-  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:40px 0 100px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;backdrop-filter:blur(14px)}
-  .card.wide{grid-column:span 2}
-  .card h3{font-size:17px;margin-bottom:8px}
-  .card p{color:var(--muted);font-size:14.5px;line-height:1.55}
-  code{font-family:'JetBrains Mono',monospace;font-size:.92em}
-  footer{color:var(--muted);font-size:13px;text-align:center;padding:0 0 40px}
-  footer a{color:inherit}
-  @media (max-width:760px){.grid{grid-template-columns:1fr}.card.wide{grid-column:auto}}
+  :root{
+    --bg:#f7f6f3; --paper:#ffffff; --border:rgba(15,17,26,.08); --border-2:rgba(15,17,26,.13);
+    --t1:#0e1015; --t2:#3b3f4a; --t3:#6d717c;
+    --sky:#1f9ee8; --violet:#7a5cff; --coral:#e2643c;
+    --sky-soft:#dff1fd; --violet-soft:#ece8ff; --coral-soft:#fde8df;
+    --sans:Inter,system-ui,-apple-system,sans-serif; --serif:'Instrument Serif',Georgia,serif; --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+    --r:16px; --ease:cubic-bezier(.2,0,0,1);
+    --lift:0 1px 2px rgba(15,17,26,.04),0 8px 24px -8px rgba(15,17,26,.08);
+    --lift-2:0 1px 2px rgba(15,17,26,.05),0 24px 60px -20px rgba(15,17,26,.18);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{background:var(--bg);color:var(--t1);font:16px/1.55 var(--sans);font-feature-settings:"kern","liga","calt","ss03";overflow-x:hidden;-webkit-font-smoothing:antialiased}
+  ::selection{background:var(--violet-soft);color:var(--t1)}
+  a{color:inherit;text-decoration:none}
+  code{font:500 .86em var(--mono);color:var(--t1);background:rgba(15,17,26,.05);padding:1px 5px;border-radius:5px}
+  kbd{display:inline-block;font:500 13px var(--mono);padding:5px 10px;border-radius:8px;background:var(--paper);border:1px solid var(--border-2);box-shadow:0 1px 0 rgba(15,17,26,.06),inset 0 -1px 0 rgba(15,17,26,.06);color:var(--t2);white-space:nowrap}
+  svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+
+  /* ---------- atmosphere ---------- */
+  .atmos{position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(42% 38% at 12% 8%,rgba(31,158,232,.16),transparent 70%),
+      radial-gradient(40% 36% at 88% 14%,rgba(226,100,60,.13),transparent 70%),
+      radial-gradient(50% 40% at 50% 92%,rgba(122,92,255,.10),transparent 70%),
+      var(--bg)}
+  #stage{position:fixed;inset:0;z-index:0;opacity:var(--stage,1)}
+  #stage canvas{display:block;width:100%;height:100%}
+  .grid-lines{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;
+    background-image:linear-gradient(rgba(15,17,26,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(15,17,26,.035) 1px,transparent 1px);background-size:56px 56px;
+    -webkit-mask-image:radial-gradient(70% 55% at 50% 30%,#000 30%,transparent 80%);mask-image:radial-gradient(70% 55% at 50% 30%,#000 30%,transparent 80%)}
+  .wrap{position:relative;z-index:1;width:100%;max-width:1160px;margin:0 auto;padding:0 24px}
+
+  /* ---------- nav ---------- */
+  nav{position:fixed;inset:0 0 auto;z-index:10;border-bottom:1px solid transparent;transition:background .32s var(--ease),border-color .32s var(--ease)}
+  nav.solid{background:rgba(247,246,243,.78);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);border-color:var(--border)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:16px;letter-spacing:-.01em}
+  .mark{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,var(--sky),var(--violet) 50%,var(--coral));position:relative;box-shadow:0 4px 12px -4px rgba(122,92,255,.5)}
+  .mark::after{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--bg)}
+  .links{display:flex;gap:28px;font-size:14px;color:var(--t3)}
+  .links a{transition:color .2s var(--ease)}.links a:hover{color:var(--t1)}
+  .btn{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:10px;font:500 14px var(--sans);border:1px solid var(--border-2);background:var(--paper);color:var(--t1);box-shadow:0 1px 2px rgba(15,17,26,.05);transition:opacity .2s var(--ease),box-shadow .2s var(--ease),transform .2s var(--ease);cursor:pointer;white-space:nowrap}
+  .btn:hover{box-shadow:var(--lift);transform:translateY(-1px)}
+  .btn.primary{background:var(--t1);color:#fff;border-color:var(--t1);box-shadow:0 8px 20px -8px rgba(15,17,26,.45)}
+  .btn.primary:hover{opacity:.9}
+  .btn.lg{height:48px;padding:0 22px;font-size:15px;border-radius:12px}
+  .btn svg{width:16px;height:16px}
+
+  /* ---------- hero ---------- */
+  .hero{min-height:100svh;display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:clamp(112px,16vh,160px)}
+  .eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:13px;color:var(--t2);padding:5px 14px 5px 5px;border:1px solid var(--border-2);border-radius:999px;background:rgba(255,255,255,.8);backdrop-filter:blur(10px);box-shadow:0 1px 2px rgba(15,17,26,.04)}
+  .eyebrow b{font-weight:500;color:#fff;background:linear-gradient(90deg,var(--sky),var(--violet));border-radius:999px;padding:2px 10px;font-size:12px}
+  h1{font-weight:600;font-size:clamp(40px,7.6vw,100px);line-height:.96;letter-spacing:-.045em;margin-top:26px}
+  .accent{font-family:var(--serif);font-style:italic;font-weight:400;letter-spacing:-.015em;padding-right:.06em;
+    background:linear-gradient(95deg,var(--sky) 5%,var(--violet) 50%,var(--coral) 92%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lede{max-width:580px;margin:24px auto 0;font-size:clamp(17px,1.9vw,19px);color:var(--t2)}
+  .ctas{display:flex;gap:12px;margin-top:32px;flex-wrap:wrap;justify-content:center}
+  .meta{margin-top:22px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+
+  /* ---------- sections ---------- */
+  section{position:relative;padding:clamp(96px,12vw,152px) 0}
+  .kicker{display:flex;align-items:center;gap:10px;font:500 12px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--t3)}
+  .kicker::before{content:"";width:18px;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--sky),var(--coral))}
+  h2{font-weight:600;font-size:clamp(36px,5vw,62px);line-height:1.03;letter-spacing:-.04em;margin-top:18px}
+  .sub{color:var(--t2);font-size:17px;max-width:520px;margin-top:20px}
+  .card{background:rgba(255,255,255,.82);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--lift);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);position:relative;overflow:hidden;transition:box-shadow .32s var(--ease),transform .32s var(--ease)}
+  .card:hover{box-shadow:var(--lift-2);transform:translateY(-2px)}
+  .ic{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;color:var(--t1);background:var(--paper);border:1px solid var(--border-2);box-shadow:0 1px 2px rgba(15,17,26,.05)}
+  .ic.sky{color:var(--sky);background:var(--sky-soft);border-color:transparent}
+  .ic.violet{color:var(--violet);background:var(--violet-soft);border-color:transparent}
+  .ic.coral{color:var(--coral);background:var(--coral-soft);border-color:transparent}
+
+  /* why + live chat */
+  .why{display:grid;grid-template-columns:1.05fr .95fr;gap:72px;align-items:center}
+  .points{margin-top:40px;display:grid;gap:22px}
+  .pt{display:flex;gap:16px}
+  .pt h4{font-weight:600;font-size:16px}
+  .pt p{color:var(--t3);font-size:15px;margin-top:2px}
+  .phone{width:min(330px,100%);margin:0 auto;border-radius:50px;padding:10px;background:linear-gradient(150deg,#f4f5f8,#d9dce3 45%,#eef0f4);box-shadow:0 0 0 1px rgba(15,17,26,.08),0 40px 80px -30px rgba(31,40,80,.35),0 18px 40px -24px rgba(226,100,60,.25)}
+  .screen{border-radius:40px;overflow:hidden;background:#fff;height:600px;display:flex;flex-direction:column;position:relative;box-shadow:inset 0 0 0 1px rgba(15,17,26,.06)}
+  .island{position:absolute;top:10px;left:50%;translate:-50% 0;width:96px;height:28px;border-radius:20px;background:#0e1015;z-index:2}
+  .tg-head{display:flex;align-items:center;gap:11px;padding:48px 16px 11px;background:rgba(255,255,255,.92);border-bottom:1px solid var(--border)}
+  .tg-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--sky),var(--violet),var(--coral))}
+  .tg-head b{display:block;font-weight:600;font-size:15px}
+  .tg-head small{color:var(--sky);font-size:12px}
+  .chat{flex:1;padding:14px 11px;display:flex;flex-direction:column;justify-content:flex-end;gap:7px;font-size:14px;line-height:1.4;overflow:hidden;
+    background:linear-gradient(160deg,#dbe9d3,#d3e3ea 50%,#e3dcef)}
+  .m{max-width:85%;padding:8px 12px 9px;border-radius:16px;display:none;box-shadow:0 1px 1px rgba(15,17,26,.08)}
+  .m.me{align-self:flex-end;background:#e2fdcf;border-bottom-right-radius:5px}
+  .m.bot{align-self:flex-start;background:#fff;border-bottom-left-radius:5px}
+  .m .tag{color:var(--coral);font-weight:600}
+  .m code{font-size:12.5px;background:rgba(226,100,60,.1);color:#b44a26}
+  .keys{display:none;grid-template-columns:1fr 1fr;gap:6px;width:85%}
+  .keys span{text-align:center;padding:9px 0;border-radius:10px;background:rgba(255,255,255,.75);backdrop-filter:blur(6px);font-size:13.5px;font-weight:500;color:#2f7cc0;box-shadow:0 1px 1px rgba(15,17,26,.08);transition:transform .2s var(--ease),background .2s var(--ease)}
+  .keys span.tap{background:#fff;transform:scale(.95)}
+  .dots{display:none;align-self:flex-start;background:#fff;border-radius:16px;padding:12px 14px;gap:4px}
+  .dots i{width:6px;height:6px;border-radius:50%;background:#9aa0aa;animation:dot 1.2s infinite}
+  .dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+  @keyframes dot{0%,60%,100%{opacity:.35}30%{opacity:1}}
+  .on{display:block;animation:pop .42s var(--ease) both}.keys.on{display:grid}.dots.on{display:flex}
+  @keyframes pop{from{opacity:0;transform:translateY(10px) scale(.97)}}
+  .tg-in{margin:0;padding:10px 14px 16px;background:#fff;color:#9aa0aa;font-size:13px;border-top:1px solid var(--border)}
+
+  /* how */
+  .flow{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:64px}
+  .step{padding:28px}
+  .num{font:500 12px var(--mono);color:var(--t3)}
+  .step h3{font-size:20px;font-weight:600;letter-spacing:-.02em;margin:20px 0 8px}
+  .step p{color:var(--t3);font-size:15px}
+  .log{margin-top:22px;font:12.5px/1.8 var(--mono);color:var(--t2);background:#f6f6f4;border:1px solid var(--border);border-radius:10px;padding:11px 13px;white-space:nowrap;overflow-x:auto}
+  .log b{font-weight:500;color:var(--coral)}.log .s{color:var(--sky);font-weight:500}
+
+  /* bento */
+  .bento{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin-top:64px}
+  .tile{padding:28px;min-height:220px;display:flex;flex-direction:column}
+  .tile h3{font-size:19px;font-weight:600;letter-spacing:-.02em;margin:18px 0 6px}
+  .tile p{color:var(--t3);font-size:15px;max-width:460px}
+  .tile .foot{margin-top:auto;padding-top:22px;display:flex;gap:8px;flex-wrap:wrap}
+  .w4{grid-column:span 4}.w2{grid-column:span 2}
+  .tile .halo{position:absolute;width:55%;height:130%;right:-20%;bottom:-75%;border-radius:50%;filter:blur(60px);opacity:.35;pointer-events:none}
+  .yn{display:flex;gap:8px;width:100%}
+  .yn span{flex:1;text-align:center;padding:9px 0;border-radius:10px;font-size:14px;font-weight:500;color:#2f7cc0;background:var(--sky-soft)}
+  .wave{display:flex;align-items:center;gap:3px;height:32px;width:100%}
+  .wave i{flex:1;border-radius:2px;background:linear-gradient(var(--sky),var(--violet));animation:w 1.3s ease-in-out infinite}
+  @keyframes w{0%,100%{transform:scaleY(.25)}50%{transform:scaleY(1)}}
+
+  /* security */
+  .sec{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-top:64px;background:var(--border);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--lift)}
+  .sec div{background:rgba(255,255,255,.92);padding:28px 24px}
+  .sec h4{font-size:16px;font-weight:600;margin:16px 0 6px}
+  .sec p{color:var(--t3);font-size:14.5px}
+
+  /* install */
+  .inst{display:grid;grid-template-columns:.9fr 1.1fr;gap:64px;align-items:center}
+  .term{background:#101218;border-color:#101218;box-shadow:0 40px 80px -30px rgba(15,17,26,.45)}
+  .term:hover{box-shadow:0 40px 80px -30px rgba(15,17,26,.5)}
+  .bar{display:flex;align-items:center;gap:7px;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.07)}
+  .bar i{width:11px;height:11px;border-radius:50%}
+  .bar i:nth-child(1){background:#ff5f57}.bar i:nth-child(2){background:#febc2e}.bar i:nth-child(3){background:#28c840}
+  .bar span{margin-left:10px;font:12px var(--mono);color:#7d808a}
+  .bar .btn{margin-left:auto;height:30px;padding:0 12px;font-size:12px;border-radius:8px;background:rgba(255,255,255,.08);color:#e9eaee;border-color:rgba(255,255,255,.12);box-shadow:none}
+  .cmds{padding:22px 22px 24px;font:14px/2.15 var(--mono);color:#e9eaee;overflow-x:auto;white-space:nowrap}
+  .cmds .p{color:#f08a63;user-select:none}
+  .cmds .ok{color:#7d808a}.cmds .ok b{color:#5fd9a0;font-weight:400}
+  .req{margin-top:30px;display:grid;gap:12px;color:var(--t2);font-size:15px}
+  .req div{display:flex;gap:12px;align-items:center}.req svg{color:var(--coral);flex:none}
+
+  .closing{text-align:center}
+  .closing h2{font-size:clamp(42px,7vw,92px)}
+  .closing .ctas{margin-top:40px}
+  footer{position:relative;z-index:1;border-top:1px solid var(--border);color:var(--t3);font-size:13px;background:rgba(255,255,255,.5)}
+  footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:26px 24px}
+  footer a:hover{color:var(--t1)}
+
+  .r{opacity:0;transform:translateY(22px);transition:opacity .9s var(--ease),transform .9s var(--ease)}
+  .r.in{opacity:1;transform:none}
+  .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}
+
+  @media (max-width:920px){
+    .links{display:none}
+    .why,.inst{grid-template-columns:1fr;gap:56px}
+    .flow{grid-template-columns:1fr}
+    .bento{grid-template-columns:1fr}.w4,.w2{grid-column:auto}
+    .sec{grid-template-columns:1fr 1fr}
+  }
+  @media (max-width:560px){
+    .wrap{padding:0 16px}
+    nav .btn span{display:none}
+    .sec{grid-template-columns:1fr}
+    .tile,.step{padding:24px}.tile{min-height:0}
+    .screen{height:560px}
+    .hero{padding-top:104px}
+    .meta{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}.r{opacity:1;transform:none;transition:none}
+    .wave i,.dots i{animation:none}
+  }
 </style>
 </head>
 <body>
-<canvas id="scene" aria-hidden="true"></canvas>
-<main>
-  <nav>
-    <div class="logo"><span>tele</span>pilot</div>
-    <a class="gh" href="https://github.com/saswatsam786/telepilot">★ GitHub</a>
-  </nav>
-  <section class="hero">
-    <div class="pill">Claude Code plugin · Telegram · iMessage · macOS</div>
-    <h1>Your Claude Code,<br><em>in your pocket.</em></h1>
-    <p class="sub">Text any Claude Code session from your phone. It does the work on your Mac, asks before anything risky with one-tap buttons, and texts you back.</p>
-    <div class="install" id="install">
-      <button class="copy" id="copy">Copy</button>
-      <div><span class="p">❯ </span>/plugin marketplace add saswatsam786/telepilot</div>
-      <div><span class="p">❯ </span>/plugin install telepilot@telepilot</div>
-      <div><span class="p">❯ </span>/telepilot:setup</div>
+<div class="atmos"></div>
+<div class="grid-lines"></div>
+<div id="stage" aria-hidden="true"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.4-3 8.3-7 9.5C8 19.3 5 15.4 5 11V6l7-3z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13L22 12v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/></symbol>
+  <symbol id="i-route" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h8.5a3.5 3.5 0 0 0 0-7h-9a3.5 3.5 0 0 1 0-7H16"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5"/></symbol>
+  <symbol id="i-mac" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M2 20h20"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.4-3 8.3-7 9.5C8 19.3 5 15.4 5 11V6l7-3z"/></symbol>
+  <symbol id="i-loop" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.2L3 16M3 21v-5h5"/></symbol>
+  <symbol id="i-feather" viewBox="0 0 24 24"><path d="M20.2 12.2a6 6 0 0 0-8.5-8.5L5 10.5V19h8.5z"/><path d="M16 8L2 22M17.5 15H9"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><rect x="9" y="9" width="6" height="6" rx="1"/></symbol>
+  <symbol id="i-tick" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></symbol>
+</svg>
+
+<nav id="nav">
+  <div class="wrap">
+    <a class="brand" href="#top"><span class="mark"></span>telepilot</a>
+    <div class="links"><a href="#why">Why</a><a href="#how">How it works</a><a href="#features">Features</a><a href="#security">Security</a><a href="#install">Install</a></div>
+    <a class="btn" href="https://github.com/saswatsam786/telepilot">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span>Star on GitHub</span>
+    </a>
+  </div>
+</nav>
+
+<main id="top">
+  <header class="wrap hero">
+    <div class="eyebrow r"><b>Open source</b>A Claude Code plugin</div>
+    <h1 class="r d1">Your Claude Code,<br><span class="accent">in your pocket.</span></h1>
+    <p class="lede r d2">Text any Claude Code session from Telegram or iMessage. It does the real work on your Mac, asks before anything risky, and texts you back.</p>
+    <div class="ctas r d3">
+      <a class="btn primary lg" href="#install">Install in 2 minutes</a>
+      <a class="btn lg" href="#how">How it works</a>
+    </div>
+    <div class="meta r d3"><kbd>@api run the tests</kbd><kbd>/new blog ~/code/blog</kbd><kbd>/photo</kbd></div>
+  </header>
+
+  <section id="why">
+    <div class="wrap why">
+      <div>
+        <div class="kicker r">Not another agent</div>
+        <h2 class="r d1">It's your Claude Code.<br><span class="accent">The chat is just the pipe.</span></h2>
+        <p class="sub r d2">You left a refactor running and you're on the train. Did the tests pass? Is it stuck on a permission prompt? Just ask it, with your own plan, sessions, skills and MCP servers.</p>
+        <div class="points">
+          <div class="pt r d1"><span class="ic sky"><svg class="i"><use href="#i-chat"/></svg></span><div><h4>Message any session by name</h4><p>Running, stopped or brand new, in any repo on your Mac.</p></div></div>
+          <div class="pt r d2"><span class="ic violet"><svg class="i"><use href="#i-check"/></svg></span><div><h4>Approve with one tap</h4><p>Permission prompts arrive as yes / no buttons. Nothing runs behind your back.</p></div></div>
+          <div class="pt r d3"><span class="ic coral"><svg class="i"><use href="#i-inbox"/></svg></span><div><h4>Answers come to you</h4><p>Each session reports back, with live typing and "still working" pings.</p></div></div>
+        </div>
+      </div>
+      <div class="r d2">
+        <div class="phone"><div class="screen">
+          <div class="island"></div>
+          <div class="tg-head"><div class="tg-av"></div><div><b>telepilot</b><small>bot · online</small></div></div>
+          <div class="chat" id="chat">
+            <div class="m me">@api run the tests and fix anything failing</div>
+            <div class="m bot">→ api</div>
+            <div class="m bot"><span class="tag">🔐 [api]</span> wants to run<br><code>git push origin main</code></div>
+            <div class="keys"><span>✅ yes</span><span>❌ no</span></div>
+            <div class="dots"><i></i><i></i><i></i></div>
+            <div class="m bot"><span class="tag">[api]</span> 3 tests were failing on the date parser. Fixed <code>src/date.ts</code>, 128/128 pass, pushed ✅</div>
+            <div class="m me">/photo</div>
+            <div class="m bot">📸 Here's your desk.</div>
+          </div>
+          <div class="tg-in">Message</div>
+        </div></div>
+      </div>
     </div>
   </section>
-  <section class="grid">
-    <div class="card wide"><h3>🧭 Talk to any session</h3><p><code>@api fix the build</code> reaches a running session, resumes a stopped one, or <code>/new</code> starts one in any folder. The hub only routes, so it always answers quickly.</p></div>
-    <div class="card"><h3>✅ One-tap approvals</h3><p>Permission prompts arrive as yes / no buttons on your phone.</p></div>
-    <div class="card"><h3>📬 Results come to you</h3><p>Each session posts its own answer, with typing and "still working" pings.</p></div>
-    <div class="card wide"><h3>💻 Your Mac, remotely</h3><p>Screenshots, camera photos, apps, Shortcuts, clipboard, volume, battery, plus <code>/unlock</code> and <code>/lock</code>. Your password stays in the Keychain.</p></div>
-    <div class="card"><h3>🎙 Voice notes</h3><p>Transcribed locally with whisper.cpp.</p></div>
-    <div class="card"><h3>🛡 Safe by default</h3><p>Allowlist, guard hooks, single-use codes, <code>/panic</code>, <code>/audit</code>.</p></div>
-    <div class="card"><h3>🪶 Zero servers</h3><p>Everything runs on your Mac with first-party Claude Code features.</p></div>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="kicker r">How it works</div>
+      <h2 class="r d1">One hub routes.<br><span class="accent">Your sessions do the work.</span></h2>
+      <p class="sub r d2">Built only on first-party Claude Code features: channels, background sessions, cross-session messaging and hooks. No servers.</p>
+      <div class="flow">
+        <div class="card step r d1"><div class="num">01</div><h3>You text it</h3><p>Anthropic's official Telegram channel delivers your message to a small hub session on your Mac.</p>
+          <div class="log"><span class="s">you</span>  @api run the tests</div></div>
+        <div class="card step r d2"><div class="num">02</div><h3>The hub routes</h3><p>It messages a running session, resumes a stopped one, or starts a new one. It never does heavy work itself.</p>
+          <div class="log"><b>hub</b>  → api (running)</div></div>
+        <div class="card step r d3"><div class="num">03</div><h3>Sessions report back</h3><p>Hooks post results and approval buttons straight to your chat, so no tokens are spent relaying.</p>
+          <div class="log"><b>api</b>  128/128 pass ✅</div></div>
+      </div>
+    </div>
   </section>
-  <footer>MIT © <a href="https://github.com/saswatsam786">saswatsam786</a> · not affiliated with Anthropic or Telegram</footer>
+
+  <section id="features">
+    <div class="wrap">
+      <div class="kicker r">Features</div>
+      <h2 class="r d1">Everything you'd do at your desk.<br><span class="accent">From anywhere.</span></h2>
+      <div class="bento">
+        <div class="card tile w4 r"><div class="halo" style="background:var(--sky-soft)"></div>
+          <span class="ic sky"><svg class="i"><use href="#i-route"/></svg></span><h3>Talk to any session</h3>
+          <p>Use <code>@name</code> to reach a specific session or <code>/new</code> to start one in any folder, or just write. The hub picks the right session, or asks one short question.</p>
+          <div class="foot"><kbd>@api fix the build</kbd><kbd>/new blog ~/code/blog</kbd><kbd>/sessions</kbd><kbd>/switch web</kbd></div></div>
+        <div class="card tile w2 r d1"><span class="ic violet"><svg class="i"><use href="#i-check"/></svg></span><h3>One-tap approvals</h3>
+          <p>Claude Code's permission system stays fully on.</p>
+          <div class="foot"><div class="yn"><span>✅ yes</span><span>❌ no</span></div></div></div>
+        <div class="card tile w2 r"><span class="ic violet"><svg class="i"><use href="#i-mic"/></svg></span><h3>Voice notes</h3>
+          <p>Transcribed on your Mac with whisper.cpp, then routed.</p>
+          <div class="foot"><div class="wave" id="wave"></div></div></div>
+        <div class="card tile w4 r d1"><div class="halo" style="background:var(--coral-soft)"></div>
+          <span class="ic coral"><svg class="i"><use href="#i-mac"/></svg></span><h3>Your Mac, remotely</h3>
+          <p>Take screenshots and camera photos, open apps, run Shortcuts, read the clipboard, set the volume and check the battery. You can even unlock the Mac. Your password stays in the Keychain and never goes through chat.</p>
+          <div class="foot"><kbd>/screenshot</kbd><kbd>/photo</kbd><kbd>/unlock</kbd><kbd>/lock</kbd><kbd>open Spotify</kbd></div></div>
+        <div class="card tile w2 r"><span class="ic"><svg class="i"><use href="#i-shield"/></svg></span><h3>Safe by default</h3><p>An allowlist, guard hooks, single-use codes, <code>/panic</code> and <code>/audit</code>.</p></div>
+        <div class="card tile w2 r d1"><span class="ic"><svg class="i"><use href="#i-loop"/></svg></span><h3>Always on</h3><p>A supervisor restarts the hub at login and after crashes.</p></div>
+        <div class="card tile w2 r d2"><span class="ic"><svg class="i"><use href="#i-feather"/></svg></span><h3>Zero servers</h3><p>Nothing leaves your Mac except your chat messages.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="security">
+    <div class="wrap">
+      <div class="kicker r">Security</div>
+      <h2 class="r d1">Remote control,<br><span class="accent">with guard rails.</span></h2>
+      <div class="sec r d2">
+        <div><span class="ic sky"><svg class="i"><use href="#i-lock"/></svg></span><h4>Only you get in</h4><p>The official pairing allowlist means only your account reaches the hub.</p></div>
+        <div><span class="ic violet"><svg class="i"><use href="#i-check"/></svg></span><h4>Permissions stay on</h4><p>Risky actions wait for your tap. Codes are random, single-use and expiring.</p></div>
+        <div><span class="ic coral"><svg class="i"><use href="#i-shield"/></svg></span><h4>Guard hooks</h4><p>They block <code>sudo</code>, deleting <code>/</code> or <code>~</code>, <code>curl | sh</code>, secret reads and edits to Claude settings.</p></div>
+        <div><span class="ic"><svg class="i"><use href="#i-stop"/></svg></span><h4>Kill switch</h4><p><code>/panic</code> stops every session telepilot started and denies pending requests.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="install">
+    <div class="wrap inst">
+      <div>
+        <div class="kicker r">Install</div>
+        <h2 class="r d1">Three commands.<br><span class="accent">Two minutes.</span></h2>
+        <p class="sub r d2">Paste them into Claude Code. Setup asks Telegram or iMessage, connects your bot, pairs your account and starts the hub.</p>
+        <div class="req r d3">
+          <div><svg class="i"><use href="#i-tick"/></svg>macOS + Claude Code 2.1.288 or newer</div>
+          <div><svg class="i"><use href="#i-tick"/></svg>Pro / Max plan or an API key</div>
+          <div><svg class="i"><use href="#i-tick"/></svg>Bun + tmux (setup installs them)</div>
+        </div>
+      </div>
+      <div class="card term r d2">
+        <div class="bar"><i></i><i></i><i></i><span>claude</span><button class="btn" id="copy">Copy</button></div>
+        <div class="cmds" id="cmds">
+          <div><span class="p">❯ </span>/plugin marketplace add saswatsam786/telepilot</div>
+          <div><span class="p">❯ </span>/plugin install telepilot@telepilot</div>
+          <div><span class="p">❯ </span>/telepilot:setup</div>
+          <div class="ok"><b>✓</b> bot connected  <b>✓</b> paired  <b>✓</b> hub running</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="closing">
+    <div class="wrap">
+      <h2 class="r">Leave the desk.<br><span class="accent">Keep shipping.</span></h2>
+      <div class="ctas r d1">
+        <a class="btn primary lg" href="https://github.com/saswatsam786/telepilot">Get telepilot on GitHub</a>
+        <a class="btn lg" href="#install">Install</a>
+      </div>
+    </div>
+  </section>
 </main>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<footer><div class="wrap"><span>MIT © <a href="https://github.com/saswatsam786">saswatsam786</a></span><span>Not affiliated with Anthropic or Telegram</span></div></footer>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
 <script>
 (() => {
-  document.getElementById('copy').onclick = async (e) => {
-    const text = [...document.querySelectorAll('#install div')].map(d => d.textContent.replace(/^❯ /, '')).join('\n');
-    try { await navigator.clipboard.writeText(text); e.target.textContent = 'Copied ✓'; } catch { e.target.textContent = 'Select & copy'; }
-    setTimeout(() => (e.target.textContent = 'Copy'), 1800);
-  };
-  if (!window.THREE) return;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const canvas = document.getElementById('scene');
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 200);
-  camera.position.set(0, 0, 22);
-
-  const TG = new THREE.Color('#2aabee'), CL = new THREE.Color('#d97757'), WH = new THREE.Color('#eef1fb');
-  // soft glow sprite texture
-  const glowTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
-    const r = g.createRadialGradient(64, 64, 0, 64, 64, 64); r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(.25, 'rgba(255,255,255,.45)'); r.addColorStop(1, 'rgba(255,255,255,0)');
-    g.fillStyle = r; g.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c); })();
-  const glow = (color, size) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
-    s.scale.setScalar(size); return s; };
-
-  const world = new THREE.Group(); scene.add(world);
-
-  // phone (left), hub (center), sessions orbiting (right)
-  const phone = new THREE.Mesh(new THREE.BoxGeometry(1.6, 3, .25), new THREE.MeshStandardMaterial({ color: '#141a33', emissive: TG, emissiveIntensity: .35, metalness: .6, roughness: .3 }));
-  phone.position.set(-4.5, -1, 0); world.add(phone); phone.add(glow(TG, 7));
-
-  const hub = new THREE.Mesh(new THREE.IcosahedronGeometry(1.3, 1), new THREE.MeshStandardMaterial({ color: CL, emissive: CL, emissiveIntensity: .55, flatShading: true, metalness: .3, roughness: .4 }));
-  hub.position.set(2, 0, 0); world.add(hub); hub.add(glow(CL, 8));
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(2.2, .03, 8, 96), new THREE.MeshBasicMaterial({ color: CL, transparent: true, opacity: .5 }));
-  hub.add(ring);
-
-  const names = 5, sessions = [];
-  for (let i = 0; i < names; i++) {
-    const m = new THREE.Mesh(new THREE.SphereGeometry(.45, 24, 24), new THREE.MeshStandardMaterial({ color: WH, emissive: i % 2 ? TG : CL, emissiveIntensity: .5, roughness: .3 }));
-    m.add(glow(i % 2 ? TG : CL, 3)); world.add(m);
-    sessions.push({ m, r: 4.2 + (i % 3) * 1.1, speed: .18 + i * .04, phase: i * (Math.PI * 2 / names), tilt: (i - 2) * .25 });
-  }
-
-  // starfield
-  const starGeo = new THREE.BufferGeometry(), N = 1400, pos = new Float32Array(N * 3);
-  for (let i = 0; i < N; i++) { pos[i*3] = (Math.random() - .5) * 120; pos[i*3+1] = (Math.random() - .5) * 80; pos[i*3+2] = -Math.random() * 60; }
-  starGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ size: .08, color: '#8b93ad', transparent: true, opacity: .8 }));
-  scene.add(stars);
-
-  scene.add(new THREE.AmbientLight('#ffffff', .5));
-  const key = new THREE.PointLight('#ffffff', 1.2, 60); key.position.set(0, 6, 12); scene.add(key);
-
-  // message packets travel phone → hub → session → phone
-  const lineMat = c => new THREE.LineBasicMaterial({ color: c, transparent: true, opacity: .25 });
-  const curve = (a, b, lift) => new THREE.QuadraticBezierCurve3(a, a.clone().lerp(b, .5).add(new THREE.Vector3(0, lift, 2)), b);
-  const packets = [];
-  const spawn = () => {
-    const s = sessions[Math.floor(Math.random() * sessions.length)];
-    packets.push({ s, t: 0, leg: 0, dot: glow(TG, 1.1) }); world.add(packets[packets.length - 1].dot);
+  const nav = document.getElementById('nav'), root = document.documentElement;
+  const onScroll = () => {
+    nav.classList.toggle('solid', scrollY > 24);
+    const k = Math.max(0, 1 - scrollY / (innerHeight * .8));
+    root.style.setProperty('--stage', (.12 + .88 * k).toFixed(3));
   };
-  const legLine = new THREE.Line(new THREE.BufferGeometry(), lineMat(TG)); world.add(legLine);
+  addEventListener('scroll', onScroll, { passive: true }); onScroll();
 
-  let mx = 0, my = 0;
-  addEventListener('pointermove', e => { mx = e.clientX / innerWidth - .5; my = e.clientY / innerHeight - .5; });
-  const resize = () => {
-    renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight;
-    // pull the scene right on wide screens so the hero text stays readable; center it on phones
-    world.position.x = innerWidth > 760 ? 9 : -1; world.position.y = innerWidth > 760 ? 0 : -14;
-    camera.position.z = innerWidth > 760 ? 24 : 34; camera.updateProjectionMatrix();
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .12, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.r').forEach(el => io.observe(el));
+
+  const wave = document.getElementById('wave');
+  for (let i = 0; i < 36; i++) { const b = document.createElement('i'); b.style.height = (30 + Math.abs(Math.sin(i * .9)) * 70) + '%'; b.style.animationDelay = (-(i * .07)) + 's'; wave.appendChild(b); }
+
+  document.getElementById('copy').onclick = async e => {
+    const text = [...document.querySelectorAll('#cmds div:not(.ok)')].map(d => d.textContent.replace(/^❯\s*/, '')).join('\n');
+    try { await navigator.clipboard.writeText(text); e.target.textContent = 'Copied'; } catch { e.target.textContent = 'Select to copy'; }
+    setTimeout(() => (e.target.textContent = 'Copy'), 1600);
   };
-  addEventListener('resize', resize); resize();
 
-  const clock = new THREE.Clock(); let nextSpawn = 0;
-  const tick = () => {
-    const t = clock.getElapsedTime();
-    hub.rotation.y = t * .4; hub.rotation.x = t * .2; ring.rotation.x = Math.PI / 2 + Math.sin(t * .6) * .3;
-    phone.rotation.y = Math.sin(t * .7) * .35; phone.position.y = -1.5 + Math.sin(t * 1.1) * .25;
-    sessions.forEach(s => { const a = t * s.speed + s.phase;
-      s.m.position.set(hub.position.x + Math.cos(a) * s.r, Math.sin(a) * s.r * .55 + s.tilt, Math.sin(a) * 2.2); });
-    if (t > nextSpawn) { spawn(); nextSpawn = t + 1.1; }
-    for (let i = packets.length - 1; i >= 0; i--) {
-      const p = packets[i]; p.t += .9 * (1 / 60);
-      const legs = [[phone.position, hub.position, 2.5, TG], [hub.position, p.s.m.position, 1.2, CL], [p.s.m.position, phone.position, -3.5, CL]];
-      if (p.t >= 1) { p.t = 0; p.leg++; }
-      if (p.leg > 2) { world.remove(p.dot); packets.splice(i, 1); continue; }
-      const [a, b, lift, c] = legs[p.leg]; const cv = curve(a, b, lift);
-      p.dot.position.copy(cv.getPoint(p.t)); p.dot.material.color.copy(c);
-      if (i === packets.length - 1) { legLine.geometry.setFromPoints(cv.getPoints(40)); legLine.material.color.copy(c); }
+  const chat = document.getElementById('chat'), els = [...chat.children];
+  const keys = chat.querySelector('.keys'), dots = chat.querySelector('.dots');
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const on = el => el.classList.add('on');
+  async function play() {
+    for (;;) {
+      els.forEach(el => el.classList.remove('on')); keys.children[0].classList.remove('tap');
+      await wait(400); on(els[0]); await wait(900); on(els[1]); await wait(1000);
+      on(els[2]); await wait(250); on(keys); await wait(1400);
+      keys.children[0].classList.add('tap'); await wait(500);
+      on(dots); await wait(1700); dots.classList.remove('on');
+      on(els[5]); await wait(1900); on(els[6]); await wait(1100); on(els[7]);
+      await wait(5000);
     }
-    stars.rotation.y = t * .01;
-    camera.position.x += (mx * 3 - camera.position.x) * .04; camera.position.y += (-my * 2 - camera.position.y) * .04;
-    camera.lookAt(world.position.x * .35, world.position.y * .35, 0);
-    renderer.render(scene, camera);
-    if (!reduce) requestAnimationFrame(tick);
-  };
-  tick();
+  }
+  if (reduce) els.filter(el => el !== dots).forEach(on);
+  else new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { play(); o.disconnect(); } }, { threshold: .3 }).observe(chat);
 })();
+</script>
+<script type="module">
+// 3D hero on light: aluminium phone → frosted-glass hub → laptop, with a stream of glossy beads
+// carrying the message across and the reply flowing back. Soft shadows, studio reflections, no bloom.
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const host = document.getElementById('stage');
+let renderer;
+try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' }); if (!renderer.getContext()) throw 0; }
+catch { host.remove(); throw new Error('no webgl'); }
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+renderer.setClearColor(0x000000, 0);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+host.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), .04).texture;
+const camera = new THREE.PerspectiveCamera(34, 1, .1, 200);
+
+const SKY = new THREE.Color('#1f9ee8'), VIOLET = new THREE.Color('#7a5cff'), CORAL = new THREE.Color('#e2643c');
+const rig = new THREE.Group(); scene.add(rig);
+
+scene.add(new THREE.HemisphereLight('#ffffff', '#e9e4dc', .9));
+const sun = new THREE.DirectionalLight('#ffffff', 2.2);
+sun.position.set(1.5, 16, 6); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048); sun.shadow.radius = 9; sun.shadow.blurSamples = 20; sun.shadow.bias = -.0004;
+Object.assign(sun.shadow.camera, { left: -16, right: 16, top: 10, bottom: -10, near: 1, far: 40 });
+rig.add(sun); rig.add(sun.target);
+
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 40), new THREE.ShadowMaterial({ opacity: .08 }));
+ground.rotation.x = -Math.PI / 2; ground.position.y = -2.4; ground.receiveShadow = true; rig.add(ground);
+
+const alu = () => new THREE.MeshPhysicalMaterial({ color: '#e6e8ee', metalness: .75, roughness: .28, clearcoat: .6, clearcoatRoughness: .3 });
+const glassDark = () => new THREE.MeshPhysicalMaterial({ color: '#141824', metalness: .1, roughness: .08, clearcoat: 1 });
+const gloss = c => new THREE.MeshPhysicalMaterial({ color: c, metalness: .05, roughness: .22, clearcoat: 1, clearcoatRoughness: .1, sheen: .4 });
+const soft = c => new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: .45, roughness: .4 });
+const cast = o => { o.traverse(m => { if (m.isMesh) m.castShadow = true; }); return o; };
+
+// phone
+const phone = new THREE.Group();
+phone.add(new THREE.Mesh(new RoundedBoxGeometry(1.75, 3.5, .22, 6, .27), alu()));
+const pScr = new THREE.Mesh(new RoundedBoxGeometry(1.56, 3.26, .02, 4, .2), glassDark()); pScr.position.z = .11; phone.add(pScr);
+const bub = [[.26, 1.05, .92, SKY], [-.22, .6, .8, new THREE.Color('#ffffff')], [.28, .14, .66, SKY], [-.18, -.36, 1.0, CORAL], [.3, -.86, .56, SKY]].map(([x, y, w, c]) => {
+  const m = new THREE.Mesh(new RoundedBoxGeometry(w, .28, .03, 3, .1), soft(c)); m.position.set(x, y, .135); phone.add(m); return { m, c };
+});
+cast(phone); rig.add(phone);
+
+// hub: frosted glass orb around a warm gradient core, with thin orbit rings
+const hub = new THREE.Group();
+const core = new THREE.Mesh(new THREE.IcosahedronGeometry(.58, 6), new THREE.MeshPhysicalMaterial({ color: '#ff9b78', emissive: '#7a5cff', emissiveIntensity: .25, roughness: .25, clearcoat: 1, iridescence: 1, iridescenceIOR: 1.6 }));
+hub.add(core);
+const orb = new THREE.Mesh(new THREE.SphereGeometry(1.2, 64, 64), new THREE.MeshPhysicalMaterial({ color: '#ffffff', transmission: 1, thickness: 1.2, roughness: .18, ior: 1.35, iridescence: .7, iridescenceIOR: 1.3, clearcoat: 1, attenuationColor: '#e9e2ff', attenuationDistance: 3 }));
+hub.add(orb);
+const rings = [[1.75, SKY, .45], [2.15, CORAL, -.5]].map(([r, c, tilt]) => { const m = new THREE.Mesh(new THREE.TorusGeometry(r, .022, 12, 200), gloss(c)); m.rotation.set(Math.PI / 2 + tilt, 0, 0); hub.add(m); return m; });
+cast(hub); rig.add(hub);
+
+// laptop
+const mac = new THREE.Group();
+mac.add(new THREE.Mesh(new RoundedBoxGeometry(3.1, .11, 2.1, 4, .05), alu()));
+const lid = new THREE.Group(); lid.position.set(0, .055, -1.05); lid.rotation.x = -.26; mac.add(lid);
+const lb = new THREE.Mesh(new RoundedBoxGeometry(3.1, 2.06, .07, 4, .05), alu()); lb.position.y = 1.03; lid.add(lb);
+const disp = new THREE.Mesh(new THREE.PlaneGeometry(2.88, 1.84), glassDark()); disp.position.set(0, 1.03, .04); lid.add(disp);
+const lines = Array.from({ length: 7 }, (_, i) => { const w = .5 + ((i * 53) % 11) / 8; const c = i === 0 ? CORAL : i % 3 ? new THREE.Color('#9aa1b2') : SKY;
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, .065), new THREE.MeshBasicMaterial({ color: c })); m.position.set(-1.25 + w / 2, 1.75 - i * .23, .045); lid.add(m); return { m, w }; });
+mac.rotation.y = -.5;
+cast(mac); rig.add(mac);
+const moons = [SKY, VIOLET, CORAL].map((c, i) => { const m = new THREE.Mesh(new THREE.SphereGeometry(.14, 32, 32), gloss(c)); m.castShadow = true; rig.add(m); return { m, r: 2.3 + i * .3, s: .3 + i * .07, p: i * 2.1 }; });
+
+// bead streams: instanced glossy spheres riding each curve, coloured from source to destination
+const streams = [];
+const beadGeo = new THREE.SphereGeometry(1, 16, 16);
+function stream(from, to, n, speed, size) {
+  const mesh = new THREE.InstancedMesh(beadGeo, new THREE.MeshPhysicalMaterial({ roughness: .2, clearcoat: 1, metalness: .05 }), n);
+  mesh.castShadow = true; rig.add(mesh);
+  const line = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial({ color: '#b9bfcc', transparent: true, opacity: .55 })); rig.add(line);
+  const seeds = Array.from({ length: n }, () => ({ t: Math.random(), v: .7 + Math.random() * .6, o: new THREE.Vector3().randomDirection().multiplyScalar(Math.random() * .14), k: .5 + Math.random() * .7 }));
+  const s = { mesh, line, seeds, speed, from, to, size, curve: null }; streams.push(s); return s;
+}
+const sOut = stream(SKY, VIOLET, 90, .12, .085), sMid = stream(VIOLET, CORAL, 90, .12, .085), sBack = stream(CORAL, SKY, 60, .09, .065);
+
+let portrait = false;
+const A = { phone: new THREE.Vector3(), hub: new THREE.Vector3(), mac: new THREE.Vector3() };
+function layout() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h); camera.aspect = w / h; portrait = w / h < .85;
+  if (portrait) { A.phone.set(-2.6, 0, 0); A.hub.set(0, .4, 0); A.mac.set(2.8, -.5, 0); rig.scale.setScalar(.8); camera.fov = 38; ground.position.y = -2.3; }
+  else { A.phone.set(-7.2, .2, 0); A.hub.set(0, .45, 0); A.mac.set(7.0, -.7, 0); rig.scale.setScalar(1); camera.fov = 30; ground.position.y = -2.3; }
+  rig.position.set(0, 0, 0);
+  // keep the headline clear: render the scene into the lower band of the viewport
+  camera.setViewOffset(w, h, 0, -h * (portrait ? .3 : .37), w, h);
+  phone.position.copy(A.phone); hub.position.copy(A.hub); mac.position.copy(A.mac);
+  const arc = (a, b, lift, z) => new THREE.CatmullRomCurve3([a, a.clone().lerp(b, .5).add(new THREE.Vector3(0, lift, z)), b]);
+  sOut.curve = arc(A.phone.clone().add(new THREE.Vector3(1, .5, .1)), A.hub.clone().add(new THREE.Vector3(-1.1, 0, 0)), 1.5, 1.1);
+  sMid.curve = arc(A.hub.clone().add(new THREE.Vector3(1.1, 0, 0)), A.mac.clone().add(new THREE.Vector3(-.5, 1.1, -.2)), 1.3, .9);
+  sBack.curve = arc(A.mac.clone().add(new THREE.Vector3(-.9, -.1, .7)), A.phone.clone().add(new THREE.Vector3(.5, -1.4, .2)), -1.2, 3.2);
+  streams.forEach(s => { s.line.geometry.dispose(); s.line.geometry = new THREE.TubeGeometry(s.curve, 160, .01, 6, false); });
+  camera.updateProjectionMatrix();
+}
+addEventListener('resize', layout); layout();
+
+const mouse = new THREE.Vector2(), aim = new THREE.Vector2();
+addEventListener('pointermove', e => aim.set(e.clientX / innerWidth - .5, e.clientY / innerHeight - .5), { passive: true });
+const clock = new THREE.Clock(), v = new THREE.Vector3(), col = new THREE.Color(), M = new THREE.Matrix4(), Q = new THREE.Quaternion(), S = new THREE.Vector3();
+function frame() {
+  const t = reduce ? 4 : clock.getElapsedTime();
+  mouse.lerp(aim, .045);
+  const sy = Math.min(scrollY / innerHeight, 1.4);
+  camera.position.set(Math.sin(t * .1) * 1.0 + mouse.x * 2.0, 3.2 - mouse.y * 1.1 + sy * 2.0, (portrait ? 30 : 27) + sy * 3.5);
+  camera.lookAt(0, -.3 - sy * 1.0, 0);
+
+  phone.rotation.set(Math.sin(t * .7) * .04, .38 + Math.sin(t * .45) * .1, Math.sin(t * .55) * .03); phone.position.y = A.phone.y + Math.sin(t * 1.05) * .14;
+  bub.forEach(({ m }, i) => { m.material.emissiveIntensity = .25 + .5 * Math.max(0, Math.sin(t * 1.6 - i * .9)); });
+  core.rotation.set(t * .3, t * .4, 0); core.scale.setScalar(1 + Math.sin(t * 2) * .04);
+  rings[0].rotation.z = t * .35; rings[1].rotation.z = -t * .27;
+  hub.position.y = A.hub.y + Math.sin(t * .9 + 2) * .12;
+  mac.position.y = A.mac.y + Math.sin(t * .85 + 1) * .08;
+  lines.forEach(({ m, w }, i) => { const k = .35 + .65 * (.5 + .5 * Math.sin(t * 1.3 + i * 1.1)); m.scale.x = k; m.position.x = -1.25 + (w * k) / 2; });
+  moons.forEach(({ m, r, s, p }) => { const a = t * s + p; m.position.set(mac.position.x + Math.cos(a) * r, mac.position.y + 1.2 + Math.sin(a * 1.4) * .45, Math.sin(a) * r * .55); });
+
+  streams.forEach(s => {
+    s.seeds.forEach((d, i) => { d.t = (d.t + s.speed * d.v * .016) % 1; s.curve.getPointAt(d.t, v).add(d.o);
+      const sc = s.size * d.k * (.35 + .65 * Math.sin(Math.PI * d.t)); S.setScalar(sc);
+      M.compose(v, Q, S); s.mesh.setMatrixAt(i, M);
+      col.copy(s.from).lerp(s.to, d.t); s.mesh.setColorAt(i, col); });
+    s.mesh.instanceMatrix.needsUpdate = true; if (s.mesh.instanceColor) s.mesh.instanceColor.needsUpdate = true;
+  });
+
+  renderer.render(scene, camera);
+  if (!reduce) requestAnimationFrame(frame);
+}
+frame();
 </script>
 </body>
 </html>
