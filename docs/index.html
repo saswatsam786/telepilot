@@ -177,6 +177,18 @@
   .wave i{flex:1;border-radius:2px;background:linear-gradient(var(--sky),var(--violet));animation:w 1.3s ease-in-out infinite}
   @keyframes w{0%,100%{transform:scaleY(.25)}50%{transform:scaleY(1)}}
 
+  /* use cases */
+  .cases{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:64px}
+  .case{padding:26px;display:flex;flex-direction:column}
+  .case.wide{grid-column:span 2}
+  .when{font:500 11.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--coral)}
+  .case h3{font-size:19px;font-weight:600;letter-spacing:-.02em;margin:10px 0 16px}
+  .mini{display:flex;flex-direction:column;gap:6px;padding:14px;border-radius:14px;background:linear-gradient(160deg,#e3eedc,#dce8ef 55%,#e7e1f1);margin-bottom:16px}
+  .mini .b{max-width:88%;padding:7px 11px;border-radius:13px;font-size:13.5px;line-height:1.4;box-shadow:0 1px 1px rgba(15,17,26,.07)}
+  .mini .me{align-self:flex-end;background:#e2fdcf;border-bottom-right-radius:4px}
+  .mini .bot{align-self:flex-start;background:#fff;border-bottom-left-radius:4px}
+  .case p{color:var(--t3);font-size:14.5px;margin-top:auto}
+
   /* security */
   .sec{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-top:64px;background:var(--border);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--lift)}
   .sec div{background:rgba(255,255,255,.92);padding:28px 24px}
@@ -213,12 +225,14 @@
     .why,.inst{grid-template-columns:1fr;gap:56px}
     .flow{grid-template-columns:1fr}
     .bento{grid-template-columns:1fr}.w4,.w2{grid-column:auto}
+    .cases{grid-template-columns:1fr 1fr}.case.wide{grid-column:span 2}
     .sec{grid-template-columns:1fr 1fr}
   }
   @media (max-width:560px){
     .wrap{padding:0 16px}
     nav .btn span{display:none}
     .sec{grid-template-columns:1fr}
+    .cases{grid-template-columns:1fr}.case.wide{grid-column:auto}
     .tile,.step{padding:24px}.tile{min-height:0}
     .screen{height:560px}
     .hero{padding-top:104px}
@@ -257,7 +271,7 @@
 <nav id="nav">
   <div class="wrap">
     <a class="brand" href="#top"><span class="mark"></span>telepilot</a>
-    <div class="links"><a href="#why">Why</a><a href="#how">How it works</a><a href="#features">Features</a><a href="#security">Security</a><a href="#install">Install</a></div>
+    <div class="links"><a href="#why">Why</a><a href="#how">How it works</a><a href="#features">Features</a><a href="#usecases">Use cases</a><a href="#security">Security</a><a href="#install">Install</a></div>
     <a class="btn" href="https://github.com/saswatsam786/telepilot">
       <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span>Star on GitHub</span>
     </a>
@@ -363,6 +377,76 @@
         <div class="card tile w2 r"><span class="ic"><svg class="i"><use href="#i-shield"/></svg></span><h3>Safe by default</h3><p>An allowlist, guard hooks, single-use codes, <code>/panic</code> and <code>/audit</code>.</p></div>
         <div class="card tile w2 r d1"><span class="ic"><svg class="i"><use href="#i-loop"/></svg></span><h3>Always on</h3><p>A supervisor restarts the hub at login and after crashes.</p></div>
         <div class="card tile w2 r d2"><span class="ic"><svg class="i"><use href="#i-feather"/></svg></span><h3>Zero servers</h3><p>Nothing leaves your Mac except your chat messages.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="usecases">
+    <div class="wrap">
+      <div class="kicker r">Use cases</div>
+      <h2 class="r d1">What people do<br><span class="accent">from their phone.</span></h2>
+      <p class="sub r d2">A few real moments where telepilot saves a walk back to the desk.</p>
+      <div class="cases">
+        <article class="card case wide r">
+          <div class="when">7:40 PM · couch</div>
+          <h3>Fix a failing CI from the couch</h3>
+          <div class="mini"><span class="b me">@api CI is red on main, fix it</span><span class="b bot">[api] Flaky date test. Patched, pushed, CI green ✅</span></div>
+          <p>A phone ping is enough. The session reads the logs, patches, pushes, and replies when it's green.</p>
+        </article>
+        <article class="card case r d2">
+          <div class="when">6:15 PM · dog walk</div>
+          <h3>Walk the dog, ship a PR</h3>
+          <div class="mini"><span class="b me">🎙 0:21 voice note</span><span class="b bot">[web] Added dark mode toggle. PR #142 opened ↗</span></div>
+          <p>Your voice note is transcribed on the Mac, routed to the right session, and it opens the PR.</p>
+        </article>
+        <article class="card case r d3">
+          <div class="when">Any time</div>
+          <h3>What's everyone doing?</h3>
+          <div class="mini"><span class="b me">what's everyone working on?</span><span class="b bot">api: tests 80% · app: building iOS · infra: idle</span></div>
+          <p>Run backend, app and infra sessions side by side and get one status roll-up in a single message.</p>
+        </article>
+        <article class="card case r">
+          <div class="when">Lunch</div>
+          <h3>Approve from anywhere</h3>
+          <div class="mini"><span class="b bot">🔐 [infra] wants to run terraform apply<br>[ ✅ yes ]  [ ❌ no ]</span><span class="b me">✅ yes</span></div>
+          <p>Risky commands wait for you. One tap on your phone and the session continues, or doesn't.</p>
+        </article>
+        <article class="card case r d2">
+          <div class="when">Left the office</div>
+          <h3>Your Mac, remotely</h3>
+          <div class="mini"><span class="b me">/lock  ·  /screenshot  ·  find invoice.pdf</span><span class="b bot">🔒 Locked. 📸 Screenshot sent. 📄 Found in ~/Documents</span></div>
+          <p>Lock or unlock, open apps, grab a screenshot or camera photo, find and send a file.</p>
+        </article>
+        <article class="card case r d3">
+          <div class="when">8:00 AM · coffee</div>
+          <h3>Morning briefing</h3>
+          <div class="mini"><span class="b me">morning briefing</span><span class="b bot">3 meetings, 2 PRs need review, 1 Sentry alert</span></div>
+          <p>Your sessions use your own connectors (calendar, GitHub, Sentry) and sum up the day in chat.</p>
+        </article>
+        <article class="card case r">
+          <div class="when">11:30 PM · bed</div>
+          <h3>Overnight refactor</h3>
+          <div class="mini"><span class="b me">/new refactor ~/code/app migrate to the new router</span><span class="b bot">[refactor] Done: 41 files, tests pass. Summary + diff 📎</span></div>
+          <p>Start it before bed and wake up to a summary and the diff, with no laptop needed.</p>
+        </article>
+        <article class="card case r d2">
+          <div class="when">2:07 AM · on call</div>
+          <h3>Incident response</h3>
+          <div class="mini"><span class="b me">@api look at the new Sentry alert</span><span class="b bot">[api] Null user in /checkout. Fix ready. Push it?</span></div>
+          <p>An alert comes in, the session investigates with your tools and proposes a fix. You decide.</p>
+        </article>
+        <article class="card case wide r d3">
+          <div class="when">Release day</div>
+          <h3>Deploys, one step at a time</h3>
+          <div class="mini"><span class="b me">@infra build, test, merge, deploy</span><span class="b bot">✓ build ✓ tests ✓ merged 🔐 deploy to prod? yes / no</span></div>
+          <p>Build, test, merge and deploy in order, with a confirmation at every risky step.</p>
+        </article>
+        <article class="card case r">
+          <div class="when">Waiting room</div>
+          <h3>Ask anything about your code</h3>
+          <div class="mini"><span class="b me">@api where do we refresh auth tokens?</span><span class="b bot">[api] src/auth/session.ts:88, every 15 min</span></div>
+          <p>Your codebase, one message away, answered by the session that already knows it.</p>
+        </article>
       </div>
     </div>
   </section>

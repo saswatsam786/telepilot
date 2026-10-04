@@ -125,6 +125,21 @@ Everything runs on first-party Claude Code features and nothing else.
 </tr>
 </table>
 
+## 💡 Use cases
+
+| | |
+|:--|:--|
+| 🛋 **Fix a failing CI from the couch** | "CI is red on main, fix it." The session reads the logs, patches, pushes and replies when it's green. |
+| 🐕 **Walk the dog, ship a PR** | Dictate a voice note. It's transcribed on your Mac, routed, coded, and the PR is opened. |
+| 👥 **What's everyone doing?** | Run backend, app and infra sessions at once and get one status roll-up. |
+| 🔐 **Approve from anywhere** | Risky commands wait for your yes / no tap. |
+| 💻 **Your Mac, remotely** | Lock or unlock, open apps, take a screenshot or photo, find and send a file. |
+| ☕ **Morning briefing** | Calendar, PRs and alerts summed up in chat, using your own connectors. |
+| 🌙 **Overnight refactor** | Start it before bed and wake up to a summary and the diff. |
+| 🚨 **Incident response** | A Sentry alert comes in, the session investigates and proposes a fix. You decide. |
+| 🚀 **Deploys, one step at a time** | Build, test, merge, deploy, with a confirmation at each risky step. |
+| 💬 **Ask anything about your code** | "Where do we refresh auth tokens?" answered from anywhere. |
+
 ## 🧠 How it works
 
 ```mermaid
