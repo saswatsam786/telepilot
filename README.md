@@ -244,6 +244,6 @@ Smooth scrolling by [Lenis](https://github.com/darkroomengineering/lenis) (MIT).
 
 ### If telepilot saved you a walk back to your desk, drop a ⭐
 
-<sub>MIT © <a href="https://github.com/saswatsam786">saswatsam786</a> · not affiliated with Anthropic or Telegram</sub>
+<sub>MIT © <a href="https://github.com/saswatsam786">saswatsam786</a></sub>
 
 </div>
