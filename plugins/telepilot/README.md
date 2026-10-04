@@ -94,7 +94,7 @@ telepilot service install     # LaunchAgent: start at login, restart if the hub 
   disk erasing, `curl | sh`, reading SSH/AWS/keychain secrets or the bot token, editing Claude
   settings or launch agents.
 - Workers only act on routing headers sent by the hub session (checked by name and process id).
-- No server: nothing leaves your Mac except your chat messages. Note that Telegram bot chats are
+- No telepilot server: it runs on your Mac. Your chat messages go through Telegram (or iMessage) and your sessions talk to Anthropic as Claude Code always does. Note that Telegram bot chats are
   not end-to-end encrypted (iMessage is).
 
 ## Limitations

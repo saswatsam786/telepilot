@@ -126,7 +126,7 @@ You get an allowlist, guard hooks, single-use codes, `/panic` and `/audit`.
 </td>
 <td valign="top">
 
-### 🪶 &nbsp;Zero servers
+### 🪶 &nbsp;No extra servers
 Everything runs on first-party Claude Code features and nothing else.
 
 </td>
@@ -163,7 +163,7 @@ flowchart LR
 
 1. **The hub only routes.** It runs Anthropic's official Telegram channel plus telepilot's dispatcher. It never does heavy work, so it always answers quickly.
 2. **Workers are ordinary Claude Code sessions.** Their hooks post results and approval buttons straight to your chat, so no hub tokens are spent relaying.
-3. **No server, no cloud.** It's built on background sessions, cross-session messaging and hooks.
+3. **No telepilot server.** It runs on your Mac, built on Claude Code's background sessions, cross-session messaging and hooks. Only Claude Code and your chat app talk to the cloud.
 
 <details>
 <summary><b>Why not just use the official Telegram plugin?</b></summary>
