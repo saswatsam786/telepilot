@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>telepilot</title>
+<meta name="description" content="Your Claude Code, in your pocket. Text any Claude Code session from Telegram or iMessage; it does the work on your Mac and texts you back.">
+<meta property="og:title" content="telepilot: your Claude Code, in your pocket">
+<meta property="og:description" content="Drive every Claude Code session and your Mac from Telegram or iMessage.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#070a14;--fg:#eef1fb;--muted:#9aa3c0;--tg:#2aabee;--cl:#d97757;--card:rgba(20,26,51,.62);--line:rgba(255,255,255,.09)}
+  @media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--bg:#f5f7ff;--fg:#0b1020;--muted:#4b5470;--card:rgba(255,255,255,.72);--line:rgba(11,16,32,.1)}}
+  *{box-sizing:border-box;margin:0}
+  html,body{background:var(--bg);color:var(--fg);font-family:Inter,system-ui,-apple-system,sans-serif;overflow-x:hidden}
+  #scene{position:fixed;inset:0;width:100vw;height:100vh;display:block}
+  main{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 16px}
+  nav{display:flex;justify-content:space-between;align-items:center;padding:22px 0}
+  .logo{font-weight:800;font-size:20px;letter-spacing:-.5px}
+  .logo span{background:linear-gradient(90deg,var(--tg),var(--cl));-webkit-background-clip:text;background-clip:text;color:transparent}
+  a.gh{color:var(--fg);text-decoration:none;border:1px solid var(--line);padding:8px 14px;border-radius:999px;font-size:14px;backdrop-filter:blur(8px);background:var(--card)}
+  .hero{min-height:calc(100vh - 80px);display:flex;flex-direction:column;justify-content:center;width:100%;max-width:600px;min-width:0;padding-bottom:60px}
+  .hero>*{min-width:0;max-width:100%}
+  .hero .sub{text-shadow:0 2px 18px var(--bg)}
+  .pill{display:inline-block;align-self:flex-start;font-size:13px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:6px 12px;margin-bottom:22px;background:var(--card);backdrop-filter:blur(8px)}
+  h1{font-size:clamp(40px,7vw,76px);line-height:1.02;letter-spacing:-2.5px;font-weight:800}
+  h1 em{font-style:normal;background:linear-gradient(90deg,var(--tg),var(--cl));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{font-size:clamp(17px,2.2vw,20px);color:var(--muted);margin:22px 0 30px;line-height:1.5}
+  .install{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;backdrop-filter:blur(14px);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:14px;line-height:1.9;position:relative;overflow-x:auto;max-width:100%;white-space:nowrap;padding-right:80px}
+  .install .p{color:var(--cl);user-select:none}
+  .copy{position:absolute;top:12px;right:12px;font:600 12px Inter,sans-serif;border:1px solid var(--line);background:transparent;color:var(--fg);border-radius:8px;padding:6px 10px;cursor:pointer}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:40px 0 100px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;backdrop-filter:blur(14px)}
+  .card.wide{grid-column:span 2}
+  .card h3{font-size:17px;margin-bottom:8px}
+  .card p{color:var(--muted);font-size:14.5px;line-height:1.55}
+  code{font-family:'JetBrains Mono',monospace;font-size:.92em}
+  footer{color:var(--muted);font-size:13px;text-align:center;padding:0 0 40px}
+  footer a{color:inherit}
+  @media (max-width:760px){.grid{grid-template-columns:1fr}.card.wide{grid-column:auto}}
+</style>
+</head>
+<body>
+<canvas id="scene" aria-hidden="true"></canvas>
+<main>
+  <nav>
+    <div class="logo"><span>tele</span>pilot</div>
+    <a class="gh" href="https://github.com/saswatsam786/telepilot">★ GitHub</a>
+  </nav>
+  <section class="hero">
+    <div class="pill">Claude Code plugin · Telegram · iMessage · macOS</div>
+    <h1>Your Claude Code,<br><em>in your pocket.</em></h1>
+    <p class="sub">Text any Claude Code session from your phone. It does the work on your Mac, asks before anything risky with one-tap buttons, and texts you back.</p>
+    <div class="install" id="install">
+      <button class="copy" id="copy">Copy</button>
+      <div><span class="p">❯ </span>/plugin marketplace add saswatsam786/telepilot</div>
+      <div><span class="p">❯ </span>/plugin install telepilot@telepilot</div>
+      <div><span class="p">❯ </span>/telepilot:setup</div>
+    </div>
+  </section>
+  <section class="grid">
+    <div class="card wide"><h3>🧭 Talk to any session</h3><p><code>@api fix the build</code> reaches a running session, resumes a stopped one, or <code>/new</code> starts one in any folder. The hub only routes, so it always answers quickly.</p></div>
+    <div class="card"><h3>✅ One-tap approvals</h3><p>Permission prompts arrive as yes / no buttons on your phone.</p></div>
+    <div class="card"><h3>📬 Results come to you</h3><p>Each session posts its own answer, with typing and "still working" pings.</p></div>
+    <div class="card wide"><h3>💻 Your Mac, remotely</h3><p>Screenshots, camera photos, apps, Shortcuts, clipboard, volume, battery, plus <code>/unlock</code> and <code>/lock</code>. Your password stays in the Keychain.</p></div>
+    <div class="card"><h3>🎙 Voice notes</h3><p>Transcribed locally with whisper.cpp.</p></div>
+    <div class="card"><h3>🛡 Safe by default</h3><p>Allowlist, guard hooks, single-use codes, <code>/panic</code>, <code>/audit</code>.</p></div>
+    <div class="card"><h3>🪶 Zero servers</h3><p>Everything runs on your Mac with first-party Claude Code features.</p></div>
+  </section>
+  <footer>MIT © <a href="https://github.com/saswatsam786">saswatsam786</a> · not affiliated with Anthropic or Telegram</footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+  document.getElementById('copy').onclick = async (e) => {
+    const text = [...document.querySelectorAll('#install div')].map(d => d.textContent.replace(/^❯ /, '')).join('\n');
+    try { await navigator.clipboard.writeText(text); e.target.textContent = 'Copied ✓'; } catch { e.target.textContent = 'Select & copy'; }
+    setTimeout(() => (e.target.textContent = 'Copy'), 1800);
+  };
+  if (!window.THREE) return;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const canvas = document.getElementById('scene');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 200);
+  camera.position.set(0, 0, 22);
+
+  const TG = new THREE.Color('#2aabee'), CL = new THREE.Color('#d97757'), WH = new THREE.Color('#eef1fb');
+  // soft glow sprite texture
+  const glowTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
+    const r = g.createRadialGradient(64, 64, 0, 64, 64, 64); r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(.25, 'rgba(255,255,255,.45)'); r.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = r; g.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c); })();
+  const glow = (color, size) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+    s.scale.setScalar(size); return s; };
+
+  const world = new THREE.Group(); scene.add(world);
+
+  // phone (left), hub (center), sessions orbiting (right)
+  const phone = new THREE.Mesh(new THREE.BoxGeometry(1.6, 3, .25), new THREE.MeshStandardMaterial({ color: '#141a33', emissive: TG, emissiveIntensity: .35, metalness: .6, roughness: .3 }));
+  phone.position.set(-4.5, -1, 0); world.add(phone); phone.add(glow(TG, 7));
+
+  const hub = new THREE.Mesh(new THREE.IcosahedronGeometry(1.3, 1), new THREE.MeshStandardMaterial({ color: CL, emissive: CL, emissiveIntensity: .55, flatShading: true, metalness: .3, roughness: .4 }));
+  hub.position.set(2, 0, 0); world.add(hub); hub.add(glow(CL, 8));
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(2.2, .03, 8, 96), new THREE.MeshBasicMaterial({ color: CL, transparent: true, opacity: .5 }));
+  hub.add(ring);
+
+  const names = 5, sessions = [];
+  for (let i = 0; i < names; i++) {
+    const m = new THREE.Mesh(new THREE.SphereGeometry(.45, 24, 24), new THREE.MeshStandardMaterial({ color: WH, emissive: i % 2 ? TG : CL, emissiveIntensity: .5, roughness: .3 }));
+    m.add(glow(i % 2 ? TG : CL, 3)); world.add(m);
+    sessions.push({ m, r: 4.2 + (i % 3) * 1.1, speed: .18 + i * .04, phase: i * (Math.PI * 2 / names), tilt: (i - 2) * .25 });
+  }
+
+  // starfield
+  const starGeo = new THREE.BufferGeometry(), N = 1400, pos = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) { pos[i*3] = (Math.random() - .5) * 120; pos[i*3+1] = (Math.random() - .5) * 80; pos[i*3+2] = -Math.random() * 60; }
+  starGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ size: .08, color: '#8b93ad', transparent: true, opacity: .8 }));
+  scene.add(stars);
+
+  scene.add(new THREE.AmbientLight('#ffffff', .5));
+  const key = new THREE.PointLight('#ffffff', 1.2, 60); key.position.set(0, 6, 12); scene.add(key);
+
+  // message packets travel phone → hub → session → phone
+  const lineMat = c => new THREE.LineBasicMaterial({ color: c, transparent: true, opacity: .25 });
+  const curve = (a, b, lift) => new THREE.QuadraticBezierCurve3(a, a.clone().lerp(b, .5).add(new THREE.Vector3(0, lift, 2)), b);
+  const packets = [];
+  const spawn = () => {
+    const s = sessions[Math.floor(Math.random() * sessions.length)];
+    packets.push({ s, t: 0, leg: 0, dot: glow(TG, 1.1) }); world.add(packets[packets.length - 1].dot);
+  };
+  const legLine = new THREE.Line(new THREE.BufferGeometry(), lineMat(TG)); world.add(legLine);
+
+  let mx = 0, my = 0;
+  addEventListener('pointermove', e => { mx = e.clientX / innerWidth - .5; my = e.clientY / innerHeight - .5; });
+  const resize = () => {
+    renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight;
+    // pull the scene right on wide screens so the hero text stays readable; center it on phones
+    world.position.x = innerWidth > 760 ? 9 : -1; world.position.y = innerWidth > 760 ? 0 : -14;
+    camera.position.z = innerWidth > 760 ? 24 : 34; camera.updateProjectionMatrix();
+  };
+  addEventListener('resize', resize); resize();
+
+  const clock = new THREE.Clock(); let nextSpawn = 0;
+  const tick = () => {
+    const t = clock.getElapsedTime();
+    hub.rotation.y = t * .4; hub.rotation.x = t * .2; ring.rotation.x = Math.PI / 2 + Math.sin(t * .6) * .3;
+    phone.rotation.y = Math.sin(t * .7) * .35; phone.position.y = -1.5 + Math.sin(t * 1.1) * .25;
+    sessions.forEach(s => { const a = t * s.speed + s.phase;
+      s.m.position.set(hub.position.x + Math.cos(a) * s.r, Math.sin(a) * s.r * .55 + s.tilt, Math.sin(a) * 2.2); });
+    if (t > nextSpawn) { spawn(); nextSpawn = t + 1.1; }
+    for (let i = packets.length - 1; i >= 0; i--) {
+      const p = packets[i]; p.t += .9 * (1 / 60);
+      const legs = [[phone.position, hub.position, 2.5, TG], [hub.position, p.s.m.position, 1.2, CL], [p.s.m.position, phone.position, -3.5, CL]];
+      if (p.t >= 1) { p.t = 0; p.leg++; }
+      if (p.leg > 2) { world.remove(p.dot); packets.splice(i, 1); continue; }
+      const [a, b, lift, c] = legs[p.leg]; const cv = curve(a, b, lift);
+      p.dot.position.copy(cv.getPoint(p.t)); p.dot.material.color.copy(c);
+      if (i === packets.length - 1) { legLine.geometry.setFromPoints(cv.getPoints(40)); legLine.material.color.copy(c); }
+    }
+    stars.rotation.y = t * .01;
+    camera.position.x += (mx * 3 - camera.position.x) * .04; camera.position.y += (-my * 2 - camera.position.y) * .04;
+    camera.lookAt(world.position.x * .35, world.position.y * .35, 0);
+    renderer.render(scene, camera);
+    if (!reduce) requestAnimationFrame(tick);
+  };
+  tick();
+})();
+</script>
+</body>
+</html>

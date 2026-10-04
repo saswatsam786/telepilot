@@ -41,4 +41,13 @@
     <text x="16" y="92" font-family="ui-monospace, Menlo, monospace" font-size="18" fill="#c9d1e6">→ api</text>
     <text x="16" y="122" font-family="ui-monospace, Menlo, monospace" font-size="18" fill="#28c840">✓ done</text>
   </g>
+  <!-- message packet: phone → Mac, reply back -->
+  <circle r="7" fill="#2aabee">
+    <animateMotion dur="3.2s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.45;1" calcMode="linear" path="M1000 160 C1030 120 1040 120 1070 170"/>
+    <animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.05;0.4;0.46;1" dur="3.2s" repeatCount="indefinite"/>
+  </circle>
+  <circle r="7" fill="#d97757">
+    <animateMotion dur="3.2s" repeatCount="indefinite" keyPoints="0;0;1" keyTimes="0;0.5;0.95" calcMode="linear" path="M1070 250 C1040 290 1030 290 1000 250"/>
+    <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.5;0.55;0.9;1" dur="3.2s" repeatCount="indefinite"/>
+  </circle>
 </svg>

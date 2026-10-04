@@ -1,57 +1,61 @@
 <div align="center">
 
-<img src="assets/banner.svg" alt="telepilot — your Claude Code, in your pocket" width="100%">
+<a href="https://saswatsam786.github.io/telepilot/">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/banner-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="assets/banner-light.svg">
+  <img src="assets/banner-dark.svg" alt="telepilot — your Claude Code, in your pocket" width="100%">
+</picture>
+</a>
 
-<h3>Text your Claude Code from anywhere. It does the work on your Mac and texts you back.</h3>
+# Your Claude Code, in your pocket.
 
-<p>
-  <a href="#-quick-start"><img alt="Claude Code plugin" src="https://img.shields.io/badge/Claude_Code-plugin-d97757?style=for-the-badge&logo=anthropic&logoColor=white"></a>
-  <a href="#-how-it-works"><img alt="Telegram" src="https://img.shields.io/badge/Telegram-ready-2AABEE?style=for-the-badge&logo=telegram&logoColor=white"></a>
-  <img alt="iMessage" src="https://img.shields.io/badge/iMessage-ready-34C759?style=for-the-badge&logo=apple&logoColor=white">
-  <img alt="macOS" src="https://img.shields.io/badge/macOS-only-000000?style=for-the-badge&logo=apple&logoColor=white">
-  <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge"></a>
-</p>
+**Text any Claude Code session from Telegram or iMessage.<br>It does the work on your Mac and texts you back.**
 
-<p>
-  <a href="#-quick-start"><b>Quick start</b></a> ·
-  <a href="#-features"><b>Features</b></a> ·
-  <a href="#-how-it-works"><b>How it works</b></a> ·
-  <a href="#-commands"><b>Commands</b></a> ·
-  <a href="#-security"><b>Security</b></a>
-</p>
+[![Live demo](https://img.shields.io/badge/✨_live_demo-3D-8b5cf6?style=flat-square)](https://saswatsam786.github.io/telepilot/)
+[![Claude Code plugin](https://img.shields.io/badge/Claude_Code-plugin-d97757?style=flat-square&logo=anthropic&logoColor=white)](#-quick-start)
+[![Telegram](https://img.shields.io/badge/Telegram-2AABEE?style=flat-square&logo=telegram&logoColor=white)](#-how-it-works)
+[![iMessage](https://img.shields.io/badge/iMessage-34C759?style=flat-square&logo=imessage&logoColor=white)](#-how-it-works)
+[![macOS](https://img.shields.io/badge/macOS-000000?style=flat-square&logo=apple&logoColor=white)](#-requirements)
+[![Bun](https://img.shields.io/badge/runs_on-Bun-f9f1e1?style=flat-square&logo=bun&logoColor=black)](https://bun.sh)
+[![License: MIT](https://img.shields.io/badge/license-MIT-3b82f6?style=flat-square)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/saswatsam786/telepilot?style=flat-square&color=f5c518)](https://github.com/saswatsam786/telepilot/stargazers)
 
-</div>
-
----
-
-You left a Claude Code session running a refactor. You're on the train. Did the tests pass? Is it stuck on a permission prompt?
-
-**telepilot turns Telegram (or iMessage) into a remote control for every Claude Code session on your Mac.** Message any session by name, start new ones in any repo, approve risky actions with a tap, and grab a screenshot or camera photo. You can even unlock the Mac.
-
-It's not a new agent. **It's _your_ Claude Code**, with your plan, sessions, skills, MCP servers and permissions. The chat app is just the pipe.
-
-<div align="center">
-
-<!-- Replace with a real recording: assets/demo.gif (phone screen recording, ~15s) -->
-<!-- <img src="assets/demo.gif" alt="telepilot demo" width="320"> -->
+[**Quick start**](#-quick-start) · [**Features**](#-features) · [**How it works**](#-how-it-works) · [**Commands**](#-commands) · [**Security**](#-security) · [**Live demo ↗**](https://saswatsam786.github.io/telepilot/)
 
 </div>
 
-```text
-you   @api run the tests and fix anything that fails
-hub   → api
-api   [api] 3 tests were failing on the date parser. Fixed in src/date.ts, all 128 pass ✅
+<br>
 
-you   /new blog ~/code/blog fix the typo in the README
-hub   🆕 blog started in ~/code/blog (★ active)
-blog  🔐 [blog] wants to run: git push          [ ✅ yes ]  [ ❌ no ]
-you   *taps yes*
-blog  [blog] Fixed "recieve" → "receive" and pushed to main.
-```
+<table>
+<tr>
+<td width="55%" valign="middle">
+
+### You left a refactor running. You're on the train.
+
+Did the tests pass? Is it stuck waiting on a permission prompt?
+
+**telepilot turns your chat app into a remote control for every Claude Code session on your Mac.**
+
+- 💬 &nbsp;Message any session by name, or start a new one in any repo
+- ✅ &nbsp;Approve risky actions with **one tap**
+- 📸 &nbsp;Grab a screenshot or camera photo, open apps, **unlock the Mac**
+- 🎙 &nbsp;Send voice notes; they're transcribed on your Mac
+
+It's not another agent. **It's _your_ Claude Code**, with your plan, sessions, skills, MCP servers and permissions. The chat app is just the pipe.
+
+</td>
+<td width="45%" align="center" valign="middle">
+
+<img src="assets/demo-chat.svg" alt="telepilot chat demo" width="300">
+
+</td>
+</tr>
+</table>
 
 ## ⚡ Quick start
 
-In Claude Code, run three commands:
+Paste these three commands into Claude Code:
 
 ```bash
 /plugin marketplace add saswatsam786/telepilot
@@ -59,7 +63,7 @@ In Claude Code, run three commands:
 /telepilot:setup
 ```
 
-Setup asks one question (Telegram or iMessage) and does the rest: it installs Bun and tmux if needed, connects your bot, pairs your account and starts the hub. It takes about 2 minutes.
+Setup asks one question (Telegram or iMessage) and does the rest: it installs Bun and tmux if needed, connects your bot, pairs your account and starts the hub. **It takes about 2 minutes.**
 
 > [!TIP]
 > Run `telepilot service install` to keep it always on. It starts at login and restarts itself if anything dies.
@@ -68,44 +72,50 @@ Setup asks one question (Telegram or iMessage) and does the rest: it installs Bu
 
 <table>
 <tr>
-<td width="50%" valign="top">
+<td colspan="2" valign="top">
 
-### 🧭 Talk to any session
-`@api fix the build` goes to a running session. If that session is stopped, it's resumed. `/new` starts a session in any folder. When you don't name one, the hub picks the right session.
+### 🧭 &nbsp;Talk to any session
+`@api fix the build` goes to a running session. If that session is stopped, it's resumed, and `/new blog ~/code/blog` starts one in any folder. Don't name a session and the hub picks the right one, or asks you.
 
 </td>
-<td width="50%" valign="top">
+<td valign="top">
 
-### ✅ One-tap approvals
-Permission prompts arrive as **yes / no buttons** on your phone. Claude Code's permission system stays fully on.
+### ✅ &nbsp;One-tap approvals
+Permission prompts arrive as **yes / no buttons**. Claude Code's safety system stays on.
 
 </td>
 </tr>
 <tr>
 <td valign="top">
 
-### 💻 Your Mac, remotely
-You can take screenshots and camera photos, open apps, run Shortcuts, read the clipboard, set the volume, check the battery, and use `/unlock` and `/lock`.
+### 📬 &nbsp;Results come to you
+Every session posts its own answer, with live typing and "still working" pings.
 
 </td>
-<td valign="top">
+<td colspan="2" valign="top">
 
-### 📬 Results come to you
-Each session posts its own answer when it finishes, with a typing indicator while it works and a "still working" ping on long jobs.
+### 💻 &nbsp;Your Mac, remotely
+Take screenshots and camera photos, open apps, run Shortcuts, read the clipboard, set the volume, check the battery, and use `/unlock` and `/lock`. Your password stays in the Keychain and never goes through chat.
 
 </td>
 </tr>
 <tr>
 <td valign="top">
 
-### 🎙 Voice notes
-Voice notes are transcribed locally with whisper.cpp, then routed like typed text. No cloud speech API.
+### 🎙 &nbsp;Voice notes
+Voice notes are transcribed locally with whisper.cpp. No cloud.
 
 </td>
 <td valign="top">
 
-### 🛡 Safe by default
-You get a pairing allowlist, guard hooks, single-use approval codes, `/panic` to stop everything, and `/audit` to see every remote action.
+### 🛡 &nbsp;Safe by default
+You get an allowlist, guard hooks, single-use codes, `/panic` and `/audit`.
+
+</td>
+<td valign="top">
+
+### 🪶 &nbsp;Zero servers
+Everything runs on first-party Claude Code features and nothing else.
 
 </td>
 </tr>
@@ -115,27 +125,27 @@ You get a pairing allowlist, guard hooks, single-use approval codes, `/panic` to
 
 ```mermaid
 flowchart LR
-    P["📱 You<br/>Telegram / iMessage"] <--> C["Official channel plugin"]
-    C --> H{{"🧭 hub session<br/>routes only"}}
-    H -- "SendMessage" --> A["api<br/>(running)"]
-    H -- "--bg --resume" --> B["blog<br/>(stopped)"]
-    H -- "--bg --name" --> N["new session<br/>any folder"]
-    H -- "delegate" --> M["mac<br/>screenshots · apps · camera"]
-    A & B & N & M -. "Stop hook: result<br/>PermissionRequest: yes/no buttons" .-> P
+    P(["📱 You<br/>Telegram · iMessage"]) <--> C["Official channel plugin"]
+    C --> H{{"🧭 hub<br/>routes only"}}
+    H -- "SendMessage" --> A["api · running"]
+    H -- "resume" --> B["blog · stopped"]
+    H -- "new" --> N["any folder · new"]
+    H -- "delegate" --> M["mac · camera · apps"]
+    A & B & N & M -. "results + yes/no buttons" .-> P
 ```
 
-- **The hub only routes.** It runs Anthropic's official, allowlisted Telegram channel together with telepilot's dispatcher. It never does heavy work, so it always answers quickly.
-- **Workers are ordinary Claude Code sessions.** Their hooks post results and approval buttons straight to your chat. No hub tokens are spent relaying.
-- **No server, no cloud.** Everything runs on your Mac with first-party Claude Code features: background sessions, cross-session messaging and hooks.
+1. **The hub only routes.** It runs Anthropic's official Telegram channel plus telepilot's dispatcher. It never does heavy work, so it always answers quickly.
+2. **Workers are ordinary Claude Code sessions.** Their hooks post results and approval buttons straight to your chat, so no hub tokens are spent relaying.
+3. **No server, no cloud.** It's built on background sessions, cross-session messaging and hooks.
 
 <details>
-<summary><b>Why not just use the Telegram plugin on its own?</b></summary>
+<summary><b>Why not just use the official Telegram plugin?</b></summary>
 
 <br>
 
 The official channel connects Telegram to **one** session. telepilot adds:
 
-- routing to many named sessions, including new and stopped ones
+- routing to many named, new and stopped sessions
 - approvals relayed from background sessions
 - Mac tools, unlock and lock
 - an always-on supervisor
@@ -146,8 +156,8 @@ The official channel connects Telegram to **one** session. telepilot adds:
 ## 📟 Commands
 
 | Send | What happens |
-|---|---|
-| `@name <task>` · `name: <task>` | Send to that session |
+|:--|:--|
+| `@name <task>` | Send to that session |
 | `<anything>` | Send to the active session ★, or let the hub decide |
 | `/new <name> [folder] [task]` | Start a background session |
 | `/sessions` | List sessions, with tap-to-switch buttons |
@@ -174,7 +184,7 @@ telepilot service install   # LaunchAgent: start at login, self-heal
 
 </details>
 
-<details>
+<details id="-requirements">
 <summary><b>📋 Requirements</b></summary>
 
 <br>
@@ -191,10 +201,9 @@ telepilot service install   # LaunchAgent: start at login, self-heal
 > Whoever controls your Telegram account can drive your Mac. **Turn on Telegram two-step verification.**
 
 - **Only you get in.** The official pairing allowlist means only your account reaches the hub.
-- **Permissions stay on.** Risky actions need your tap. Approval codes are random, single-use and expiring, and 3 wrong codes lock approvals for 10 minutes.
-- **Guard hooks** block `sudo`, deleting `/` or `~`, disk erasing, `curl | sh`, and reading SSH, AWS or Keychain secrets or the bot token. They also block edits to Claude settings and launch agents.
+- **Permissions stay on.** Risky actions need your tap. Codes are random, single-use and expiring, and 3 wrong codes lock approvals for 10 minutes.
+- **Guard hooks** block `sudo`, deleting `/` or `~`, disk erasing, `curl | sh`, and reading secrets or the bot token. They also block edits to Claude settings.
 - **Trusted routing only.** Workers trust routing headers only from the real hub process, checked by name and PID.
-- **Your password stays on the Mac.** `/unlock` reads it from your Keychain and never sends it through chat.
 - **Know the channel.** Telegram bot chats aren't end-to-end encrypted. iMessage chats are.
 
 <details>
@@ -214,13 +223,13 @@ telepilot service install   # LaunchAgent: start at login, self-heal
 bun install && bun test     # unit + integration tests, no network, fake claude
 ```
 
-The plugin lives in [`plugins/telepilot`](plugins/telepilot). It has no runtime dependencies and runs directly on Bun. See its [README](plugins/telepilot/README.md) for the fakechat dev loop.
+The plugin lives in [`plugins/telepilot`](plugins/telepilot) and has no runtime dependencies. The 3D landing page is [`docs/index.html`](docs/index.html). See the plugin's [README](plugins/telepilot/README.md) for the fakechat dev loop.
 
 <div align="center">
 <br>
 
-**If telepilot saves you a trip back to your desk, give it a ⭐**
+### If telepilot saved you a walk back to your desk, drop a ⭐
 
-<sub>MIT © saswatsam786 · not affiliated with Anthropic or Telegram</sub>
+<sub>MIT © <a href="https://github.com/saswatsam786">saswatsam786</a> · not affiliated with Anthropic or Telegram</sub>
 
 </div>

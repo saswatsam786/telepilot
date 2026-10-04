@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="400" viewBox="0 0 1280 400" role="img" aria-label="telepilot: your Claude Code, in your pocket">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f6f8ff"/>
+      <stop offset="1" stop-color="#ffeee6"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#2aabee"/>
+      <stop offset="1" stop-color="#d97757"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.8" cy="0.3" r="0.6">
+      <stop offset="0" stop-color="#d97757" stop-opacity="0.25"/>
+      <stop offset="1" stop-color="#d97757" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1280" height="400" rx="24" fill="url(#bg)"/>
+  <rect width="1280" height="400" rx="24" fill="url(#glow)"/>
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+    <text x="96" y="170" font-size="96" font-weight="800" fill="#0b1020" letter-spacing="-3">telepilot</text>
+    <rect x="100" y="196" width="220" height="6" rx="3" fill="url(#accent)"/>
+    <text x="98" y="262" font-size="34" font-weight="500" fill="#39415c">Your Claude Code, in your pocket.</text>
+    <text x="98" y="310" font-size="22" fill="#5b6380">Text any session · approve with one tap · run your Mac from Telegram</text>
+  </g>
+  <!-- phone -->
+  <g transform="translate(860,70)">
+    <rect width="140" height="260" rx="22" fill="#ffffff" stroke="#2aabee" stroke-width="3"/>
+    <rect x="16" y="40" width="96" height="30" rx="10" fill="#2aabee"/>
+    <rect x="28" y="84" width="96" height="30" rx="10" fill="#e3e8f5"/>
+    <rect x="16" y="128" width="70" height="30" rx="10" fill="#2aabee"/>
+    <rect x="28" y="172" width="96" height="44" rx="10" fill="#e3e8f5"/>
+  </g>
+  <!-- link -->
+  <g stroke="url(#accent)" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 12" fill="none">
+    <path d="M1010 200 L1060 200"/>
+  </g>
+  <!-- terminal -->
+  <g transform="translate(1070,120)">
+    <rect width="150" height="160" rx="14" fill="#ffffff" stroke="#d97757" stroke-width="3"/>
+    <circle cx="20" cy="20" r="5" fill="#ff5f57"/><circle cx="36" cy="20" r="5" fill="#febc2e"/><circle cx="52" cy="20" r="5" fill="#28c840"/>
+    <text x="16" y="62" font-family="ui-monospace, Menlo, monospace" font-size="18" fill="#d97757">❯ hub</text>
+    <text x="16" y="92" font-family="ui-monospace, Menlo, monospace" font-size="18" fill="#39415c">→ api</text>
+    <text x="16" y="122" font-family="ui-monospace, Menlo, monospace" font-size="18" fill="#28c840">✓ done</text>
+  </g>
+  <!-- message packet: phone → Mac, reply back -->
+  <circle r="7" fill="#2aabee">
+    <animateMotion dur="3.2s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.45;1" calcMode="linear" path="M1000 160 C1030 120 1040 120 1070 170"/>
+    <animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.05;0.4;0.46;1" dur="3.2s" repeatCount="indefinite"/>
+  </circle>
+  <circle r="7" fill="#d97757">
+    <animateMotion dur="3.2s" repeatCount="indefinite" keyPoints="0;0;1" keyTimes="0;0.5;0.95" calcMode="linear" path="M1070 250 C1040 290 1030 290 1000 250"/>
+    <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.5;0.55;0.9;1" dur="3.2s" repeatCount="indefinite"/>
+  </circle>
+</svg>

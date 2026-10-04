@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="560" viewBox="0 0 420 560" role="img" aria-label="Telegram chat with telepilot: a task is routed, approved with a tap, and the result comes back">
+  <style>
+    .b{opacity:0;animation:in 12s infinite}
+    .t{font:15px -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+    .m{font:13px ui-monospace,Menlo,monospace}
+    @keyframes in{0%{opacity:0;transform:translateY(8px)}4%{opacity:1;transform:none}92%{opacity:1}100%{opacity:0}}
+    .d1{animation-delay:.3s}.d2{animation-delay:1.3s}.d3{animation-delay:2.6s}.d4{animation-delay:4.2s}.d5{animation-delay:5.4s}.d6{animation-delay:7s}
+  </style>
+  <rect width="420" height="560" rx="36" fill="#0e1621"/>
+  <rect x="0" y="0" width="420" height="64" rx="36" fill="#17212b"/>
+  <rect x="0" y="36" width="420" height="28" fill="#17212b"/>
+  <circle cx="40" cy="34" r="16" fill="#d97757"/>
+  <text x="70" y="31" class="t" fill="#fff" font-weight="600">telepilot</text>
+  <text x="70" y="49" class="t" fill="#6c7883" font-size="12">bot · your Mac</text>
+
+  <g class="b d1"><rect x="150" y="84" width="250" height="40" rx="16" fill="#2b5278"/>
+    <text x="166" y="109" class="t" fill="#fff">@api run tests, fix failures</text></g>
+  <g class="b d2"><rect x="20" y="136" width="90" height="36" rx="16" fill="#182533"/>
+    <text x="36" y="159" class="t" fill="#8ab4f8">→ api</text></g>
+  <g class="b d3"><rect x="20" y="184" width="300" height="84" rx="16" fill="#182533"/>
+    <text x="36" y="208" class="t" fill="#fff">🔐 [api] wants to run:</text>
+    <text x="36" y="232" class="m" fill="#d97757">git push origin main</text></g>
+  <g class="b d3"><rect x="20" y="274" width="146" height="38" rx="12" fill="#2b5278"/>
+    <text x="72" y="298" class="t" fill="#fff">✅ yes</text>
+    <rect x="174" y="274" width="146" height="38" rx="12" fill="#2b5278"/>
+    <text x="226" y="298" class="t" fill="#fff">❌ no</text></g>
+  <g class="b d4"><rect x="300" y="326" width="100" height="40" rx="16" fill="#2b5278"/>
+    <text x="336" y="351" class="t" fill="#fff">yes</text></g>
+  <g class="b d5"><rect x="20" y="380" width="380" height="84" rx="16" fill="#182533"/>
+    <text x="36" y="406" class="t" fill="#fff">[api] 3 tests were failing on the date</text>
+    <text x="36" y="428" class="t" fill="#fff">parser. Fixed src/date.ts, 128/128 pass,</text>
+    <text x="36" y="450" class="t" fill="#fff">pushed to main ✅</text></g>
+  <g class="b d6"><rect x="196" y="478" width="204" height="40" rx="16" fill="#2b5278"/>
+    <text x="212" y="503" class="t" fill="#fff">/photo   📸   /unlock</text></g>
+</svg>
