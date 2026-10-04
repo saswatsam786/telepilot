@@ -480,11 +480,12 @@
       <div>
         <div class="kicker r">Install</div>
         <h2 class="r d1">One line.<br><span class="accent">Two minutes.</span></h2>
-        <p class="sub r d2">Run the one-liner in your terminal, then <code>/telepilot:setup</code> in Claude Code. Setup asks Telegram or iMessage, connects your bot, pairs your account and starts the hub.</p>
+        <p class="sub r d2">Run the one-liner in your terminal, then <code>/telepilot:setup</code> in a new Claude Code session. Setup asks Telegram or iMessage, connects your bot, pairs your account and starts the hub.</p>
         <div class="req r d3">
-          <div><svg class="i"><use href="#i-tick"/></svg>macOS + Claude Code 2.1.288 or newer</div>
+          <div><svg class="i"><use href="#i-tick"/></svg>macOS + Claude Code 2.1.288 or newer, opened once</div>
           <div><svg class="i"><use href="#i-tick"/></svg>Pro / Max plan or an API key</div>
-          <div><svg class="i"><use href="#i-tick"/></svg>Bun + tmux (setup installs them)</div>
+          <div><svg class="i"><use href="#i-tick"/></svg><span>git (<code>xcode-select --install</code>)</span></div>
+          <div><svg class="i"><use href="#i-tick"/></svg>Bun + tmux (setup installs them with Homebrew)</div>
         </div>
       </div>
       <div class="card term r d2">
@@ -492,6 +493,7 @@
         <div class="cmds" id="cmds">
           <div><span class="p">❯ </span>/plugin marketplace add saswatsam786/telepilot</div>
           <div><span class="p">❯ </span>/plugin install telepilot@telepilot</div>
+          <div><span class="p">❯ </span>/reload-plugins</div>
           <div><span class="p">❯ </span>/telepilot:setup</div>
           <div class="ok"><b>✓</b> bot connected  <b>✓</b> paired  <b>✓</b> hub running</div>
         </div>

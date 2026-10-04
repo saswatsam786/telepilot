@@ -34,10 +34,14 @@ never stops answering.
 
 ## Requirements
 
-- macOS, Claude Code CLI (2.1.288+ tested), logged in with claude.ai (Pro/Max) or a Console API key.
-  Team/Enterprise: an admin must enable Channels.
-- [Bun](https://bun.sh) (`brew install oven-sh/bun/bun`) and tmux (`brew install tmux`).
-- Optional, for voice notes: `brew install ffmpeg whisper-cpp` plus a whisper model.
+- macOS only. Claude Code CLI (2.1.288+ tested), logged in with claude.ai (Pro/Max) or a Console API key.
+  Team/Enterprise: an admin must enable Channels. Open Claude Code once before installing. Its first
+  launch adds the official `claude-plugins-official` marketplace, which provides the Telegram/iMessage plugin.
+- git, from the Xcode Command Line Tools (`xcode-select --install`), to add the marketplace.
+- [Bun](https://bun.sh) (`brew install oven-sh/bun/bun`) and tmux (`brew install tmux`). Setup installs
+  both with [Homebrew](https://brew.sh) if they're missing.
+- Optional, for voice notes: `brew install ffmpeg whisper-cpp` plus the model:
+  `mkdir -p ~/.telepilot/models && curl -L -o ~/.telepilot/models/ggml-base.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin`
 
 ## Install (about 2 minutes)
 
@@ -46,18 +50,30 @@ In Claude Code:
 ```
 /plugin marketplace add saswatsam786/telepilot
 /plugin install telepilot@telepilot
+/reload-plugins
 /telepilot:setup
 ```
 
-Setup asks one question (Telegram or iMessage) and then does the rest. It:
+Or in a terminal: `claude plugin marketplace add saswatsam786/telepilot && claude plugin install telepilot@telepilot`,
+then run `/telepilot:setup` in a new Claude Code session.
 
-- installs Bun and tmux if they're missing,
+Setup asks which app you want (Telegram or iMessage), then does the rest. It:
+
+- installs Bun and tmux with Homebrew if they're missing,
 - connects your bot (you paste the token from @BotFather),
 - starts the hub with the chat plugin enabled only there,
+- the first time, asks you to trust the hub's folder once (`telepilot attach`, press Enter, then Ctrl-b d),
 - pairs your account (tap **Start** on the bot, then say yes),
+- adds one rule, `mcp__plugin_telepilot_telepilot`, to `~/.claude/settings.json` so sessions can use
+  telepilot's Mac tools. It keeps a backup.
 - optionally keeps the hub always on.
 
-Prefer a terminal? Run `telepilot setup`. It's safe to re-run, and it only fixes what's missing.
+Setup also installs the `telepilot` command in `~/.local/bin`. After that, `telepilot setup` works from
+any terminal. It's safe to re-run, and it only fixes what's missing. To run setup from a terminal
+before the command exists, use
+`bash "$(ls -d ~/.claude/plugins/cache/telepilot/telepilot/*/ | tail -1)scripts/telepilot" setup`.
+If it can't find `telegram@claude-plugins-official`, run
+`claude plugin marketplace add anthropics/claude-plugins-official` and run setup again.
 
 ## Commands (from your phone)
 
@@ -77,11 +93,15 @@ Prefer a terminal? Run `telepilot setup`. It's safe to re-run, and it only fixes
 ## Launcher (on the Mac)
 
 ```
+telepilot setup               # re-run setup; safe, only fixes what's missing
+telepilot pair                # pair your Telegram account again
 telepilot start | stop | restart | status | logs | attach | doctor
 telepilot stop --all          # kill switch: hub + every session telepilot started
 telepilot permissions         # trigger macOS permission pop-ups once (run it at the Mac)
 telepilot unlock-setup        # once, at the Mac: store your login password in the Keychain + self-test /unlock
+telepilot allow-tools         # let sessions use telepilot's Mac tools without prompts
 telepilot service install     # LaunchAgent: start at login, restart if the hub or bot poller dies
+telepilot service uninstall   # remove the LaunchAgent
 ```
 
 ## Security
