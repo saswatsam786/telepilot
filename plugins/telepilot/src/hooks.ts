@@ -7,7 +7,7 @@
 // post the answer back. Hooks write only hook JSON to stdout and always exit 0.
 
 import { createApproval, waitForDecision } from './lib/approvals'
-import { loadConfig, telegramStateDir } from './lib/config'
+import { isHubSession, loadConfig, telegramStateDir } from './lib/config'
 import { audit } from './lib/audit'
 import { checkHubBash, checkHubTool, checkSelfModification, checkTool } from './lib/guard'
 import { loadState, updateState } from './lib/registry'
@@ -23,6 +23,7 @@ import { readFileSync, openSync, fstatSync, readSync, closeSync } from 'fs'
 
 type HookInput = {
   session_id?: string
+  cwd?: string
   transcript_path?: string
   hook_event_name?: string
   tool_name?: string
@@ -31,7 +32,7 @@ type HookInput = {
   error?: string
 }
 
-const isHub = process.env.TELEPILOT_ROLE === 'hub'
+let isHub = false // decided once the hook input (with the session's cwd) is read
 const emit = (o: object) => process.stdout.write(JSON.stringify(o))
 
 const HUB_PRIMER = `You are the telepilot hub: the user talks to you from their phone (Telegram or iMessage) and you dispatch work to their Claude Code sessions.
@@ -172,6 +173,7 @@ let input: HookInput = {}
 try {
   input = JSON.parse((await Bun.stdin.text()) || '{}')
 } catch {}
+isHub = isHubSession(input.cwd ?? process.cwd())
 
 try {
   if (event === 'session-start' && isHub) {

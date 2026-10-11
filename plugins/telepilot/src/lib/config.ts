@@ -1,7 +1,7 @@
 // User config (~/.telepilot/config.json) plus the bits we borrow from the official
 // Telegram channel's state dir: the bot token (.env) and the owner's chat id (access.json).
 
-import { readFileSync } from 'fs'
+import { readFileSync, realpathSync } from 'fs'
 import { join } from 'path'
 import { CLAUDE_DIR, expandHome, paths, readJson } from './util'
 
@@ -27,6 +27,19 @@ const DEFAULTS: Config = {
 
 export function loadConfig(): Config {
   return { ...DEFAULTS, ...readJson<Partial<Config>>(paths.config(), {}) }
+}
+
+// Is this process the hub? TELEPILOT_ROLE=hub alone isn't enough, because the variable can leak
+// into an ordinary terminal and turn the user's own session into a routing-only "hub". The hub
+// always runs in its own folder, so both must match.
+export function isHubSession(cwd: string = process.cwd()): boolean {
+  if (process.env.TELEPILOT_ROLE !== 'hub') return false
+  const hubDir = expandHome(loadConfig().hubDir ?? join(paths.config(), '..', 'hub'))
+  try {
+    return realpathSync(cwd) === realpathSync(hubDir)
+  } catch {
+    return false
+  }
 }
 
 export function telegramStateDir(cfg = loadConfig()): string {

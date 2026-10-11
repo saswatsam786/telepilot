@@ -1,4 +1,4 @@
-import { chmodSync, mkdtempSync, writeFileSync } from 'fs'
+import { chmodSync, mkdtempSync, writeFileSync, mkdirSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 
@@ -59,7 +59,15 @@ esac
   return bin
 }
 
+// The real hub runs in its own folder (~/.telepilot/hub); a simulated hub does too.
+export function hubDir(): string {
+  const d = join(process.env.TELEPILOT_HOME!, 'hub')
+  mkdirSync(d, { recursive: true })
+  return d
+}
+
 export async function runHook(event: string, input: object, env: Record<string, string> = {}): Promise<{ stdout: string; code: number }> {
+  if (env.TELEPILOT_ROLE === 'hub' && !('cwd' in input)) input = { ...input, cwd: hubDir() }
   const proc = Bun.spawn(['bun', join(PLUGIN, 'src', 'hooks.ts'), event], {
     stdin: new Blob([JSON.stringify(input)]),
     stdout: 'pipe',

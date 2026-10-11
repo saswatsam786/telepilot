@@ -3,7 +3,7 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
 import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
-import { assistant, fakeClaude, freshHome, header, human, peer, PLUGIN, runHook, writeTranscript } from './helpers'
+import { assistant, fakeClaude, freshHome, header, hubDir, human, peer, PLUGIN, runHook, writeTranscript } from './helpers'
 
 let home = ''
 async function userSays(text: string) {
@@ -125,6 +125,7 @@ describe('MCP server', () => {
     const proc = Bun.spawn(['bun', join(PLUGIN, 'src', 'server.ts')], {
       stdin: 'pipe',
       stdout: 'pipe',
+      cwd: env.TELEPILOT_ROLE === 'hub' ? hubDir() : undefined,
       env: { ...process.env, ...env } as Record<string, string>,
     })
     proc.stdin.write(JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2026-07-28' } }) + '\n')
@@ -266,6 +267,11 @@ describe('telepilot protects itself', async () => {
     await updateState(s => { s.sessions['job-x'] = { name: 'job-x', sessionId: 'sess-job-x', cwd: '/tmp', createdBy: 'telepilot', createdAt: 1 } })
     const t = writeTranscript(home, [human(`${header('job-x')} add an unlock tool`)], 'self.jsonl')
     const r = await runHook('guard', { session_id: 'sess-job-x', tool_name: 'Edit', tool_input: { file_path: `${root}/src/tools/mac.ts` }, transcript_path: t }, { CLAUDE_PLUGIN_ROOT: root })
+    expect(r.stdout).toBe('')
+  })
+  test('a leaked TELEPILOT_ROLE=hub outside the hub folder does not make a session the hub', async () => {
+    const t = writeTranscript(home, [human('set up cognee')], 'leak.jsonl')
+    const r = await runHook('guard', { tool_name: 'Bash', tool_input: { command: 'gh auth status' }, transcript_path: t, cwd: '/tmp' }, { TELEPILOT_ROLE: 'hub' })
     expect(r.stdout).toBe('')
   })
   test('the hub still cannot edit telepilot', async () => {

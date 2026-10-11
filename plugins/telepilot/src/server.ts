@@ -4,6 +4,7 @@
 // Every session gets the Mac tools. Only the hub (TELEPILOT_ROLE=hub, set by the
 // launcher) gets the session/routing tools, so workers can't spawn or steer sessions.
 
+import { isHubSession } from './lib/config'
 import { updateState } from './lib/registry'
 import { log } from './lib/util'
 import { audioTools } from './tools/audio'
@@ -13,7 +14,7 @@ import { fail, type Tool, type ToolResult } from './tools/types'
 
 const VERSION = '0.1.0'
 const KNOWN_PROTOCOLS = ['2024-11-05', '2025-03-26', '2025-06-18', '2025-11-25']
-const isHub = process.env.TELEPILOT_ROLE === 'hub'
+const isHub = isHubSession()
 
 // The hub only talks and routes, so it gets the routing tools (+ transcribe for voice notes);
 // every session it routes to gets the Mac tools.
