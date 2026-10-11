@@ -333,3 +333,18 @@ describe('telegram delivery retries', async () => {
     }
   })
 })
+
+describe('relay: the hub forwards the user\'s own words', async () => {
+  const { userWords } = await import('../plugins/telepilot/src/lib/transcript')
+  const ch = (t: string) => ({ type: 'user', isMeta: true, origin: { kind: 'channel' }, message: { role: 'user', content: `<channel source="plugin:telegram:telegram" chat_id="123456789" user_id="123456789">\n${t}\n</channel>` } })
+  const toolUse = (name: string) => ({ type: 'assistant', message: { content: [{ type: 'tool_use', name, input: {} }] } })
+  test('latest message, word for word', () => {
+    expect(userWords([ch('start contributing to cognee with my personal github')])).toEqual(['start contributing to cognee with my personal github'])
+  })
+  test('a reply to a hub question travels with the original ask', () => {
+    expect(userWords([ch('old task'), toolUse('mcp__plugin_telepilot_telepilot__send_to'), ch('fix the build'), toolUse('mcp__plugin_telepilot_telepilot__route'), ch('in ~/code/api')])).toEqual(['fix the build', 'in ~/code/api'])
+  })
+  test('telepilot echoes are skipped; nothing to forward for an empty voice note', () => {
+    expect(userWords([ch('🤖 [api] done')])).toEqual([])
+  })
+})

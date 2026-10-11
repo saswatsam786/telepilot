@@ -117,6 +117,27 @@ export function latestChannelTexts(lines: Line[]): string[] {
   return []
 }
 
+// What the user actually wrote, for the hub to forward word for word: the channel messages of the
+// latest prompt plus earlier ones back to the previous hand-off (so the reply to a hub question like
+// "which folder?" travels with the original ask). Telepilot's own 🤖 echoes are skipped.
+const HANDOFF = /(__send_to|__delegate|__session_new|^SendMessage)$/
+export function userWords(lines: Line[], max = 6): string[] {
+  const out: string[] = []
+  let seenPrompt = false
+  for (let i = lines.length - 1; i >= 0 && out.length < max; i--) {
+    const o = lines[i]!
+    if (seenPrompt && o?.type === 'assistant' && Array.isArray(o.message?.content) && o.message.content.some((b: any) => b?.type === 'tool_use' && HANDOFF.test(String(b.name)))) break
+    let raw: string | null = null
+    if (o?.type === 'user') raw = promptText(o)
+    else if (o?.type === 'attachment' && o.attachment?.type === 'queued_command' && typeof o.attachment.prompt === 'string') raw = o.attachment.prompt
+    if (!raw || !raw.includes('<channel')) continue
+    seenPrompt = true
+    const texts = [...raw.matchAll(/<channel\b[^>]*>([\s\S]*?)<\/channel>/g)].map(m => m[1]!.trim()).filter(t => t && !t.startsWith('🤖'))
+    out.unshift(...texts)
+  }
+  return out
+}
+
 export type ChannelMsg = { text: string; userId?: string; chatId?: string; ts?: number }
 
 // Channel messages reach the hub as prompts (user lines, isMeta) or, mid-turn, as

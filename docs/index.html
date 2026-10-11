@@ -387,7 +387,7 @@
           <span class="ic coral"><svg class="i"><use href="#i-mac"/></svg></span><h3>Your Mac, remotely</h3>
           <p>Take screenshots and camera photos, open apps, run Shortcuts, read the clipboard, set the volume and check the battery. You can even unlock the Mac. Your password stays in the Keychain and never goes through chat.</p>
           <div class="foot"><kbd>/screenshot</kbd><kbd>/photo</kbd><kbd>/unlock</kbd><kbd>/lock</kbd><kbd>open Spotify</kbd></div></div>
-        <div class="card tile w2 r"><span class="ic"><svg class="i"><use href="#i-shield"/></svg></span><h3>Safe by default</h3><p>An allowlist, guard hooks, single-use codes, <code>/panic</code> and <code>/audit</code>.</p></div>
+        <div class="card tile w2 r"><span class="ic"><svg class="i"><use href="#i-shield"/></svg></span><h3>Safe by default</h3><p>An allowlist, single-use codes, <code>/panic</code> and <code>/audit</code>.</p></div>
         <div class="card tile w2 r d1"><span class="ic"><svg class="i"><use href="#i-loop"/></svg></span><h3>Always on</h3><p>A supervisor restarts the hub at login and after crashes.</p></div>
         <div class="card tile w2 r d2"><span class="ic"><svg class="i"><use href="#i-feather"/></svg></span><h3>No extra servers</h3><p>telepilot runs entirely on your Mac. Only Claude Code and your chat app talk to the cloud.</p></div>
       </div>
@@ -478,11 +478,11 @@
     <div class="wrap">
       <div class="kicker r">Security</div>
       <h2 class="r d1">Nothing runs<br><span class="accent">without your yes.</span></h2>
-      <p class="sub r d2">Remote control with guard rails. Anything risky stops and asks you first, on your phone.</p>
+      <p class="sub r d2">Your sessions' permission prompts come to your phone as yes / no buttons. telepilot itself only relays.</p>
       <div class="sec r d2">
         <div><span class="ic sky"><svg class="i"><use href="#i-lock"/></svg></span><h4>Only you get in</h4><p>The official pairing allowlist means only your account reaches the hub.</p></div>
         <div><span class="ic violet"><svg class="i"><use href="#i-check"/></svg></span><h4>Permissions stay on</h4><p>Risky actions wait for your tap. Codes are random, single-use and expiring.</p></div>
-        <div><span class="ic coral"><svg class="i"><use href="#i-shield"/></svg></span><h4>Guard hooks</h4><p>They block <code>sudo</code>, deleting <code>/</code> or <code>~</code>, <code>curl | sh</code>, secret reads and edits to Claude settings.</p></div>
+        <div><span class="ic coral"><svg class="i"><use href="#i-shield"/></svg></span><h4>Just a relay</h4><p>telepilot never blocks or rewrites anything in your sessions. Your message is handled exactly like one you typed.</p></div>
         <div><span class="ic"><svg class="i"><use href="#i-stop"/></svg></span><h4>Kill switch</h4><p><code>/panic</code> stops every session telepilot started and denies pending requests.</p></div>
       </div>
     </div>

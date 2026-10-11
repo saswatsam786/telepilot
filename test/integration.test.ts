@@ -50,12 +50,11 @@ describe('hooks', () => {
     expect(outbox().pop()).toMatchObject({ chat_id: '777', text: 'hello there' })
   })
 
-  test('guard denies dangerous commands only in routed turns', async () => {
+  test('telepilot only relays: the guard never blocks in a user session, routed or not', async () => {
     const routed = writeTranscript(home, [human(`${header()} clean up`)], 'g1.jsonl')
     const local = writeTranscript(home, [human('clean up')], 'g2.jsonl')
-    const input = { tool_name: 'Bash', tool_input: { command: 'sudo rm -rf /opt/x' } }
-    const denied = await runHook('guard', { ...input, transcript_path: routed })
-    expect(JSON.parse(denied.stdout).hookSpecificOutput.permissionDecision).toBe('deny')
+    const input = { tool_name: 'Bash', tool_input: { command: 'cat ~/.ssh/config && gh auth token' } }
+    expect((await runHook('guard', { ...input, transcript_path: routed })).stdout).toBe('')
     expect((await runHook('guard', { ...input, transcript_path: local })).stdout).toBe('')
   })
 
@@ -263,13 +262,16 @@ describe('workers never load chat channel plugins', () => {
 describe('telepilot protects itself', async () => {
   const { updateState } = await import('../plugins/telepilot/src/lib/registry')
   const root = join(home, 'plugin-root')
-  test('a session telepilot started must ask before editing telepilot', async () => {
+  test('a session telepilot started is left alone too (Claude Code permissions still apply)', async () => {
     await updateState(s => { s.sessions['job-x'] = { name: 'job-x', sessionId: 'sess-job-x', cwd: '/tmp', createdBy: 'telepilot', createdAt: 1 } })
     const t = writeTranscript(home, [human(`${header('job-x')} add an unlock tool`)], 'self.jsonl')
     const r = await runHook('guard', { session_id: 'sess-job-x', tool_name: 'Edit', tool_input: { file_path: `${root}/src/tools/mac.ts` }, transcript_path: t }, { CLAUDE_PLUGIN_ROOT: root })
-    expect(JSON.parse(r.stdout).hookSpecificOutput).toMatchObject({ permissionDecision: 'ask' })
-    const sh = await runHook('guard', { session_id: 'sess-job-x', tool_name: 'Bash', tool_input: { command: `sed -i '' s/a/b/ ${root}/src/lib/guard.ts` }, transcript_path: t }, { CLAUDE_PLUGIN_ROOT: root })
-    expect(JSON.parse(sh.stdout).hookSpecificOutput.permissionDecision).toBe('ask')
+    expect(r.stdout).toBe('')
+  })
+  test('the hub still cannot edit telepilot', async () => {
+    const t = writeTranscript(home, [human('hi')], 'hubself.jsonl')
+    const r = await runHook('guard', { session_id: 'sess-hub', tool_name: 'Edit', tool_input: { file_path: `${root}/src/tools/mac.ts` }, transcript_path: t }, { CLAUDE_PLUGIN_ROOT: root, TELEPILOT_ROLE: 'hub' })
+    expect(JSON.parse(r.stdout).hookSpecificOutput.permissionDecision).toBe('deny')
   })
   test("the user's own routed session (not created by telepilot) is unaffected", async () => {
     const t = writeTranscript(home, [human(`${header('my-dev')} improve the plugin`)], 'dev.jsonl')

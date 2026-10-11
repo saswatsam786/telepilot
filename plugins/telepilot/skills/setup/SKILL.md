@@ -35,7 +35,7 @@ the work, prints ✓/✗ lines, and is safe to re-run.
    say it's done.
 
 4. **Pair their account** (Telegram only).
-   - Run `bash "$TP" pair --wait 180 --json` and tell them: "On your phone, open t.me/<bot> and tap Start."
+   - Run `bash "$TP" pair --wait 100 --json` (this stays under the Bash tool's 2-minute limit; if nothing arrives, run it again) and tell them: "On your phone, open t.me/<bot> and tap Start."
    - It prints `{"pending":{"code":…,"senderId":…,"who":…}}`. Ask: "Pairing request from <who>. Is that you?"
    - Only if they confirm here, run `bash "$TP" pair --approve <code>`. That also locks the bot to their account.
    - If it prints `{"pending":null}`, offer to try again.

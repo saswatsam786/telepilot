@@ -110,9 +110,9 @@ telepilot service uninstall   # remove the LaunchAgent
   two-step verification: whoever controls your Telegram can drive your Mac.
 - Claude Code's permission system stays on. Risky actions in any session need your approval;
   worker approvals use random, single-use, expiring codes (3 wrong codes lock approvals for 10 min).
-- A guard hook blocks high-risk actions in phone-driven turns: `sudo`, deleting `/` or `~`,
-  disk erasing, `curl | sh`, reading SSH/AWS/keychain secrets or the bot token, editing Claude
-  settings or launch agents.
+- telepilot only relays. It never blocks or rewrites anything in your sessions: a message from your
+  phone is handled exactly like one you typed, under Claude Code's normal permissions. Only the hub is
+  kept to talking and routing.
 - Workers only act on routing headers sent by the hub session (checked by name and process id).
 - No telepilot server: it runs on your Mac. Your chat messages go through Telegram (or iMessage) and your sessions talk to Anthropic as Claude Code always does. Note that Telegram bot chats are
   not end-to-end encrypted (iMessage is).

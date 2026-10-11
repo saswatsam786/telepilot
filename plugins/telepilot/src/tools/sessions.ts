@@ -14,7 +14,7 @@ import { listAgents, resumeBackground, startBackground, stopSession, type Agent 
 import { loadConfig, ownerChatId, telegramStateDir } from '../lib/config'
 import { loadState, updateState } from '../lib/registry'
 import { fuzzyMatch, makeHeader, NAME_RE, parseCommand } from '../lib/routing'
-import { findTranscript, ownerSaid, readTail, recentActivity } from '../lib/transcript'
+import { findTranscript, ownerSaid, readTail, recentActivity, userWords } from '../lib/transcript'
 import { expandHome, paths, readJson, truncate } from '../lib/util'
 import { takeScreenshot } from './mac'
 import { fail, json, obj, str, text, type Tool, type ToolResult } from './types'
@@ -473,6 +473,15 @@ function scanProjects(roots: string[]): Record<string, string> {
 const chatIdArg = str('chat_id from the inbound <channel> tag (defaults to the paired owner)')
 const chat = (a: Record<string, any>) => String(a.chat_id ?? ownerChatId() ?? '0')
 
+// telepilot only relays: a session gets the user's own words, never a brief the hub wrote.
+// The hub picks the destination; `text` from the hub is used only when the user sent no words
+// (e.g. a voice note, where the hub passes the transcript).
+function relayText(hubText: unknown): string {
+  const path = loadState().hub?.transcript
+  const words = path ? userWords(readTail(path)) : []
+  return words.length ? words.join('\n') : String(hubText ?? '').trim()
+}
+
 export const sessionTools: Tool[] = [
   {
     name: 'route',
@@ -483,16 +492,16 @@ export const sessionTools: Tool[] = [
   },
   {
     name: 'send_to',
-    description: 'Route a task to a named session after you decided the target. Returns send_message (running), or resumes a stopped session itself.',
-    inputSchema: obj({ name: str('session name'), text: str('the task for that session'), chat_id: chatIdArg }, ['name', 'text']),
-    run: async a => asResult(await deliver(String(a.name), String(a.text), chat(a))),
+    description: "Forward the user's message, word for word, to a named session after you picked it. Returns send_message (running), or resumes a stopped session itself.",
+    inputSchema: obj({ name: str('session name'), text: str("only for a voice note: its transcript. Otherwise the user's own words are forwarded unchanged"), chat_id: chatIdArg }, ['name']),
+    run: async a => asResult(await deliver(String(a.name), relayText(a.text), chat(a))),
   },
   {
     name: 'delegate',
     description:
       "Run a slow or multi-step task (waiting on CI, merging, building, long research) in a background session so the hub stays free for new messages. Returns immediately; the session posts the result to the chat when it's done. Optional: name (reuse that session, or create it), dir (working folder; default: the hub folder).",
-    inputSchema: obj({ task: str('what to do, in full'), name: str('session name to reuse or create'), dir: str('working folder'), chat_id: chatIdArg }, ['task']),
-    run: async a => asResult(await delegate({ task: String(a.task), name: a.name, dir: a.dir, chatId: chat(a) })),
+    inputSchema: obj({ task: str("only for a voice note: its transcript. Otherwise the user's own words are forwarded unchanged"), name: str('session name to reuse or create'), dir: str('working folder'), chat_id: chatIdArg }, []),
+    run: async a => asResult(await delegate({ task: relayText(a.task), name: a.name, dir: a.dir, chatId: chat(a) })),
   },
   {
     name: 'session_new',
@@ -501,13 +510,13 @@ export const sessionTools: Tool[] = [
       {
         name: str('short session name, e.g. the project name'),
         dir: str('folder to work in (absolute or ~/...). Omit to look it up in the project index.'),
-        task: str('first task for the session'),
+        task: str("only for a voice note: its transcript. Otherwise the user's own words are forwarded unchanged"),
         model: str('optional model alias for this session, e.g. sonnet or opus'),
         chat_id: chatIdArg,
       },
       ['name'],
     ),
-    run: async a => asResult(await newSession({ name: String(a.name), dir: a.dir, task: a.task, model: a.model, chatId: chat(a) })),
+    run: async a => asResult(await newSession({ name: String(a.name), dir: a.dir, task: relayText(a.task), model: a.model, chatId: chat(a) })),
   },
   {
     name: 'sessions_list',

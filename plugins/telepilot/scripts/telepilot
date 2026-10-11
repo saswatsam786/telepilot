@@ -526,7 +526,12 @@ setup() {
     fi
   fi
   if is_telegram; then
-    if [ "$(bun -e "$PAIR_JS" count "$STATE_DIR")" = 0 ]; then pair_cmd || true; else ok "your Telegram account is paired"; fi
+    # Only wait for a pairing request at a real terminal. When /telepilot:setup runs this
+    # without one, the hub may still be at the folder-trust prompt, so waiting here would just
+    # time out; the skill's own pairing step takes over instead.
+    if [ "$(bun -e "$PAIR_JS" count "$STATE_DIR")" != 0 ]; then ok "your Telegram account is paired"
+    elif [ -t 0 ] && [ -t 1 ]; then pair_cmd || true
+    else info "next: pair your Telegram account (telepilot pair)"; fi
     bun -e "$PAIR_JS" ack "$STATE_DIR" >/dev/null 2>&1   # 👀 reaction the moment a message arrives
   fi
   allow_tools

@@ -129,7 +129,7 @@ Voice notes are transcribed locally with whisper.cpp. No cloud.
 <td valign="top">
 
 ### 🛡 &nbsp;Safe by default
-You get an allowlist, guard hooks, single-use codes, `/panic` and `/audit`.
+You get an allowlist, single-use codes, `/panic` and `/audit`.
 
 </td>
 <td valign="top">
@@ -184,7 +184,7 @@ The official channel connects Telegram to **one** session. telepilot adds:
 - approvals relayed from background sessions
 - Mac tools, unlock and lock
 - an always-on supervisor
-- guard rails for phone-driven turns
+- one-tap approvals relayed to your phone
 
 </details>
 
@@ -261,7 +261,7 @@ telepilot service install   # LaunchAgent: start at login, self-heal (undo: serv
 
 - **Only you get in.** The official pairing allowlist means only your account reaches the hub.
 - **Permissions stay on.** Risky actions need your tap. Codes are random, single-use and expiring, and 3 wrong codes lock approvals for 10 minutes.
-- **Guard hooks** block `sudo`, deleting `/` or `~`, disk erasing, `curl | sh`, and reading secrets or the bot token. They also block edits to Claude settings.
+- **Just a relay.** telepilot never blocks or rewrites anything in your sessions. A message from your phone is handled exactly like one you typed, under Claude Code's normal permissions.
 - **Trusted routing only.** Workers trust routing headers only from the real hub process, checked by name and PID.
 - **Know the channel.** Telegram bot chats aren't end-to-end encrypted. iMessage chats are.
 

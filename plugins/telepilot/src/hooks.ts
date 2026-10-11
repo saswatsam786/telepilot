@@ -2,7 +2,9 @@
 //
 // Hooks load into every session where the plugin is enabled, so each one first checks
 // whether the session is the hub or the current turn was routed by the hub; otherwise
-// it does nothing. Hooks write only hook JSON to stdout and always exit 0.
+// it does nothing. telepilot only relays: in the user's sessions the hooks never block a
+// tool; they show "typing…", pass permission prompts of phone-sent turns to the phone, and
+// post the answer back. Hooks write only hook JSON to stdout and always exit 0.
 
 import { createApproval, waitForDecision } from './lib/approvals'
 import { loadConfig, telegramStateDir } from './lib/config'
@@ -40,7 +42,7 @@ For EVERY inbound <channel> message: call telepilot's \`route\` tool with the te
 - ignore / done → send nothing (an echo of telepilot's own message, or route already messaged the user).
 Unlocking/locking the Mac: whatever the wording, call route with \`/unlock\` or \`/lock\`. Never type passwords yourself.
 - decide → choose: send_to(the session it belongs to), session_new for a new project, or delegate(task) for everything else.
-You never get permission prompts: anything needing approval is refused here, so hand it off (delegate, send_to, or session_new name="mac" for Mac/shell tasks) and that session asks the user yes/no. You ONLY talk and route: never do the work yourself (no shell, files, web, apps, Mac control or other connectors; those tools are refused here). Answer small talk and questions about telepilot or the sessions directly; hand every real task to a session with delegate(task) or send_to. Sessions report back by themselves.
+You never get permission prompts: anything needing approval is refused here, so hand it off (delegate, send_to, or session_new name="mac" for Mac/shell tasks) and that session asks the user yes/no. You ONLY talk and route: never do the work yourself (no shell, files, web, apps, Mac control or other connectors; those tools are refused here). Answer small talk and questions about telepilot or the sessions directly; hand every real task to a session with delegate or send_to. You are only a relay: the tools forward the user's own words unchanged, so never write a brief, add instructions, rules or plans of your own, or summarize. Just pick where it goes. Sessions report back by themselves.
 Never create extra Mac sessions (mac-activity, mac2…): use delegate, which reuses \"mac\".
 Voice notes: download_attachment → telepilot transcribe → echo the transcript → route it. Details: the telepilot:dispatcher skill.`
 
@@ -87,21 +89,24 @@ function protectedRoots(): string[] {
 
 async function guard(input: HookInput): Promise<void> {
   if (!input.tool_name) return
-  const r = isHub ? null : routed(input)
-  if (!isHub && !r) return
-  // keep "typing…" visible in Telegram while this turn works
-  const chat = r?.chatId ?? (isHub && input.transcript_path ? channelTurn(readTail(input.transcript_path))?.chatId : undefined)
-  if (chat && input.session_id) startTyping(input.session_id, chat, r?.to)
-  let verdict = (isHub ? checkHubTool(input.tool_name, input.tool_input) : null) ?? checkTool(input.tool_name, input.tool_input)
-  if (!verdict && isHub && input.tool_name === 'Bash') verdict = checkHubBash(String(input.tool_input?.command ?? ''))
-  // Sessions the phone started (the hub, and sessions telepilot created) can't silently edit telepilot itself.
-  const createdByTelepilot = Object.values(loadState().sessions).some(s => s.sessionId === input.session_id && s.createdBy === 'telepilot')
-  if (!verdict && (isHub || createdByTelepilot)) verdict = checkSelfModification(input.tool_name, input.tool_input, protectedRoots())
-  if (verdict && isHub && /^(AskUserQuestion|ExitPlanMode)$/.test(input.tool_name)) {
+  // telepilot only relays. In the user's own sessions it never blocks or changes anything:
+  // a turn that came from the phone just gets the "typing…" indicator.
+  if (!isHub) {
+    const r = routed(input)
+    if (r && input.session_id) startTyping(input.session_id, r.chatId, r.to)
+    return
+  }
+  // The hub itself only talks and routes, so it is kept to its routing tools.
+  const chat = input.transcript_path ? channelTurn(readTail(input.transcript_path))?.chatId : undefined
+  if (chat && input.session_id) startTyping(input.session_id, chat)
+  let verdict = checkHubTool(input.tool_name, input.tool_input) ?? checkTool(input.tool_name, input.tool_input)
+  if (!verdict && input.tool_name === 'Bash') verdict = checkHubBash(String(input.tool_input?.command ?? ''))
+  if (!verdict) verdict = checkSelfModification(input.tool_name, input.tool_input, protectedRoots())
+  if (verdict && /^(AskUserQuestion|ExitPlanMode)$/.test(input.tool_name)) {
     verdict = { reason: 'You are the telepilot hub: the user is on their phone. Ask with the channel reply tool instead of a terminal dialog.' }
   }
   if (verdict) {
-    audit('blocked', { tool: input.tool_name, hub: isHub, reason: truncate(verdict.reason, 140) })
+    audit('blocked', { tool: input.tool_name, hub: true, reason: truncate(verdict.reason, 140) })
     emit({ hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: verdict.decision ?? 'deny', permissionDecisionReason: verdict.reason } })
   }
 }
